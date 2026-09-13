@@ -160,8 +160,10 @@ const T = {
     industrial_title:"Industrijski izvori zagađenja",
     industrial_intro:"Pored saobraćaja i grejanja, veći deo zagađenja u Srbiji potiče od industrijskih postrojenja.",
     newsletter_title:"Prijavite se na obaveštenja", newsletter_ph:"vasa@email.com", newsletter_btn:"Prijavi se", newsletter_ok:"Hvala! Proverite email za potvrdu.",
-    admin_login_title:"Prijava za administratore", email:"Email", password:"Lozinka", login_btn:"Prijavi se",
-    login_error:"Pogrešan email ili lozinka.", login_hint:"",
+    admin_login_title:"Prijava za administratore", email:"Aktivistički identitet", password:"Lozinka", login_btn:"Pošalji bezbedni kod",
+    login_error:"Greška pri prijavi.", login_hint:"",
+    otp_sent_to:"Kod poslat na", otp_placeholder:"Unesite kod", verify_btn:"Potvrdi i prijavi se",
+    change_email:"← Promeni alias", resend_code:"Pošalji kod ponovo", domain_note:"Samo @alarmzavazduh.rs nalozi",
     admin_panel:"Administratorska tabla", add_article:"Nova vest", article_title:"Naslov", article_excerpt:"Kratak opis", article_body:"Tekst vesti", publish:"Objavi",
     manage_news:"Upravljanje vestima", data_overview:"Pregled podataka", no_articles_yet:"Još uvek nema objavljenih vesti.", station:"Stanica",
     article_photo:"Fotografije (opciono, može više odjednom)", publishing:"Kompresovanje i objavljivanje…", photo_upload_error_prefix:"Greška pri otpremanju fotografija:", photo_pending_badge:"",
@@ -192,8 +194,10 @@ const T = {
     industrial_title:"Индустријски извори загађења",
     industrial_intro:"Поред саобраћаја и грејања, већи део загађења у Србији потиче од индустријских постројења.",
     newsletter_title:"Пријавите се на обавештења", newsletter_ph:"vasa@email.com", newsletter_btn:"Пријави се", newsletter_ok:"Хвала! Проверите имејл за потврду.",
-    admin_login_title:"Пријава за администраторе", email:"Имејл", password:"Лозинка", login_btn:"Пријави се",
-    login_error:"Погрешан имејл или лозинка.", login_hint:"",
+    admin_login_title:"Пријава за администраторе", email:"Активистички идентитет", password:"Лозинка", login_btn:"Пошаљи безбедни код",
+    login_error:"Грешка при пријави.", login_hint:"",
+    otp_sent_to:"Код послат на", otp_placeholder:"Унесите код", verify_btn:"Потврди и пријави се",
+    change_email:"← Промени алиас", resend_code:"Пошаљи код поново", domain_note:"Само @alarmzavazduh.rs налози",
     admin_panel:"Административна табла", add_article:"Нова вест", article_title:"Наслов", article_excerpt:"Кратак опис", article_body:"Текст вести", publish:"Објави",
     manage_news:"Управљање вестима", data_overview:"Преглед података", no_articles_yet:"Још увек нема објављених вести.", station:"Станица",
     article_photo:"Фотографије (опционо, може више одједном)", publishing:"Компресовање и објављивање…", photo_upload_error_prefix:"Грешка при отпремању фотографија:", photo_pending_badge:"",
@@ -414,7 +418,7 @@ async function storageSet(key, value, shared){
 ================================================================= */
 const state = {
   lang:"sr-latn", view:"home", stationId:"ns-liman",
-  isAdmin:false, loginError:"", currentUser:null,
+  isAdmin:false, loginError:"", currentUser:null, authStep:"request", pendingEmail:"",
   articles: SEED_ARTICLES.slice(),
   articlesLoadError:null,
   publishing:false, publishError:"", deleteError:"",
@@ -430,7 +434,7 @@ function currentStation(){ return STATIONS.find(s=>s.id===state.stationId) || ST
    ACTIONS
 ================================================================= */
 function setLang(l){ state.lang=l; render(); }
-function setView(v){ state.view=v; state.loginError=""; render(); window.scrollTo(0,0); }
+function setView(v){ state.view=v; state.loginError=""; if (v==="admin-login"){ state.authStep="request"; state.pendingEmail=""; } render(); window.scrollTo(0,0); }
 function setStationId(id){ state.stationId=id; render(); }
 function setCityFirstStation(city){
   const first = STATIONS.find(s=>(s.city||t().city_unknown)===city);
@@ -440,20 +444,51 @@ function setCityFirstStation(city){
 function toggleArticle(id){ state.expandedArticle = state.expandedArticle===id ? null : id; render(); }
 function toggleTerm(key){ state.expandedTerm = state.expandedTerm===key ? null : key; render(); }
 
-async function doLogin(e){
+const ADMIN_EMAIL_DOMAIN = "@alarmzavazduh.rs";
+
+function resetAuthStep(){
+  state.authStep = "request"; state.pendingEmail = ""; state.loginError = "";
+  render();
+}
+
+async function requestOtp(e){
   e.preventDefault();
-  const email = document.getElementById("login-user").value.trim();
-  const pass = document.getElementById("login-pass").value;
+  const username = document.getElementById("login-user").value.trim();
+  if (!username) return;
+  state.loginError = ""; render();
+
+  state.pendingEmail = `${username}${ADMIN_EMAIL_DOMAIN}`;
+  const { error } = await getTttClient().auth.signInWithOtp({
+    email: state.pendingEmail,
+    options: { shouldCreateUser: true }
+  });
+  if (error){ state.loginError = error.message; state.pendingEmail = ""; render(); return; }
+  state.authStep = "otp"; render();
+}
+
+async function resendOtp(){
+  if (!state.pendingEmail) return;
+  const { error } = await getTttClient().auth.signInWithOtp({
+    email: state.pendingEmail,
+    options: { shouldCreateUser: true }
+  });
+  alert(error ? ("Greška: " + error.message) : "Novi kod je poslat.");
+}
+
+async function verifyOtp(e){
+  e.preventDefault();
+  const token = document.getElementById("otp-input").value.trim();
+  if (!token) return;
   state.loginError = ""; render();
 
   const client = getTttClient();
-  const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
-  if (error){ state.loginError = t().login_error; render(); return; }
+  const { data, error } = await client.auth.verifyOtp({ email: state.pendingEmail, token, type: "email" });
+  if (error){ state.loginError = error.message; render(); return; }
 
-  const { data: adminRow } = await azvAdmins().select("user_id").eq("user_id", data.user.id).maybeSingle();
-  if (!adminRow){
+  if (!data.user.email.endsWith(ADMIN_EMAIL_DOMAIN)){
     await client.auth.signOut();
-    state.loginError = t().login_error; render();
+    state.loginError = t().login_error;
+    resetAuthStep();
     return;
   }
 
@@ -471,9 +506,11 @@ async function restoreAdminSession(){
   const client = getTttClient();
   const { data: { session } } = await client.auth.getSession();
   if (!session) return;
-  const { data: adminRow } = await azvAdmins().select("user_id").eq("user_id", session.user.id).maybeSingle();
-  if (adminRow){ state.isAdmin = true; state.currentUser = session.user; }
-  else await client.auth.signOut();
+  if (session.user.email && session.user.email.endsWith(ADMIN_EMAIL_DOMAIN)){
+    state.isAdmin = true; state.currentUser = session.user;
+  } else {
+    await client.auth.signOut();
+  }
 }
 
 async function loadArticlesFromSupabase(){
@@ -758,13 +795,33 @@ function renderReport(){
 
 function renderAdminLogin(){
   const T_=t();
+  if (state.authStep === "otp"){
+    return `<div style="max-width:380px;margin:0 auto;padding:70px 20px;">
+      <h1 class="serif" style="font-size:26px;margin-bottom:8px;">${T_.admin_login_title}</h1>
+      <p style="font-size:13px;color:#5B6B70;margin-bottom:20px;">${T_.otp_sent_to} <strong>${state.pendingEmail}</strong></p>
+      <form onsubmit="verifyOtp(event)" class="form-col">
+        <label class="label">${T_.otp_placeholder}<input id="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" style="text-align:center;font-size:20px;letter-spacing:4px;"></label>
+        ${state.loginError ? `<div class="error-text">${state.loginError}</div>` : ""}
+        <button type="submit" class="btn btn-ink" style="margin-top:8px;">${icon('login',14)} ${T_.verify_btn}</button>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;">
+          <button type="button" onclick="resetAuthStep()" style="background:none;border:none;color:#5B6B70;cursor:pointer;">${T_.change_email}</button>
+          <button type="button" onclick="resendOtp()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:700;">${T_.resend_code}</button>
+        </div>
+      </form>
+    </div>`;
+  }
   return `<div style="max-width:380px;margin:0 auto;padding:70px 20px;">
     <h1 class="serif" style="font-size:26px;margin-bottom:20px;">${T_.admin_login_title}</h1>
-    <form onsubmit="doLogin(event)" class="form-col">
-      <label class="label">${T_.email}<input id="login-user" type="email" autocomplete="username"></label>
-      <label class="label">${T_.password}<input id="login-pass" type="password" autocomplete="current-password"></label>
+    <form onsubmit="requestOtp(event)" class="form-col">
+      <label class="label">${T_.email}
+        <div style="display:flex;align-items:center;border:1px solid var(--line);border-radius:3px;padding:0 10px;">
+          <input id="login-user" type="text" autocomplete="username" style="border:none;padding:9px 0;flex:1;font-size:14px;">
+          <span style="font-size:13px;color:#8B968B;">${ADMIN_EMAIL_DOMAIN}</span>
+        </div>
+      </label>
       ${state.loginError ? `<div class="error-text">${state.loginError}</div>` : ""}
       <button type="submit" class="btn btn-ink" style="margin-top:8px;">${icon('login',14)} ${T_.login_btn}</button>
+      <div style="font-size:12px;color:#8B968B;margin-top:4px;">${T_.domain_note}</div>
     </form>
   </div>`;
 }
@@ -847,7 +904,6 @@ function getTttClient(){
 // Security gate writes — only accounts listed in azv.admins can publish
 // or delete, everyone can read.
 function azvNews(){ return getTttClient().schema('azv').from('news'); }
-function azvAdmins(){ return getTttClient().schema('azv').from('admins'); }
 
 // The stations table has no "city" column — only lat/lon — but every
 // TraceTheToxin station name is prefixed with its city ("Beograd Stari
