@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sr">
+<html lang="sr-Latn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -220,7 +220,9 @@ const T = {
     edu_title:"Vodič kroz zagađivače",
     industrial_title:"Industrijski izvori zagađenja",
     industrial_intro:"Pored saobraćaja i grejanja, veći deo zagađenja u Srbiji potiče od industrijskih postrojenja.",
-    newsletter_title:"Prijavite se na obaveštenja", newsletter_ph:"vasa@email.com", newsletter_btn:"Prijavi se", newsletter_ok:"Hvala! Proverite email za potvrdu.",
+    newsletter_title:"Prijavite se na obaveštenja", newsletter_ph:"vasa@email.com", newsletter_btn:"Prijavi se", newsletter_ok:"Hvala na prijavi!",
+    confirm_delete_article:"Da li ste sigurni da želite da obrišete ovu vest? Ova radnja se ne može opozvati.",
+    live_error_public:"Trenutno prikazujemo demo podatke — pravi podaci uživo su privremeno nedostupni.",
     admin_login_title:"Prijava za administratore", email:"Nalog", password:"Lozinka", login_btn:"Pošalji bezbedni kod",
     login_error:"Greška pri prijavi.", login_hint:"",
     otp_sent_to:"Kod poslat na", otp_placeholder:"Unesite kod", verify_btn:"Potvrdi i prijavi se",
@@ -255,7 +257,9 @@ const T = {
     edu_title:"Водич кроз загађиваче",
     industrial_title:"Индустријски извори загађења",
     industrial_intro:"Поред саобраћаја и грејања, већи део загађења у Србији потиче од индустријских постројења.",
-    newsletter_title:"Пријавите се на обавештења", newsletter_ph:"vasa@email.com", newsletter_btn:"Пријави се", newsletter_ok:"Хвала! Проверите имејл за потврду.",
+    newsletter_title:"Пријавите се на обавештења", newsletter_ph:"vasa@email.com", newsletter_btn:"Пријави се", newsletter_ok:"Хвала на пријави!",
+    confirm_delete_article:"Да ли сте сигурни да желите да обришете ову вест? Ова радња се не може опозвати.",
+    live_error_public:"Тренутно приказујемо демо податке — прави подаци уживо су привремено недоступни.",
     admin_login_title:"Пријава за администраторе", email:"Налог", password:"Лозинка", login_btn:"Пошаљи безбедни код",
     login_error:"Грешка при пријави.", login_hint:"",
     otp_sent_to:"Код послат на", otp_placeholder:"Унесите код", verify_btn:"Потврди и пријави се",
@@ -314,10 +318,14 @@ function srDisplay(str){ return state.lang==="sr-cyrl" ? latToCyr(str) : str; }
 /* =================================================================
    DATA
 ================================================================= */
+// `code` is a short, non-color badge (letters, not just a hue) so severity
+// is still legible for colorblind users and in bright outdoor sunlight —
+// the exact conditions this app gets used in. Kept intentionally terse
+// since it sits inline next to numbers in tight list rows and table cells.
 const AQI_LEVELS = [
-  {max:50,key:"good",color:"#4C9A6A"},{max:100,key:"moderate",color:"#B98F1E"},
-  {max:150,key:"usg",color:"#D97B29"},{max:200,key:"unhealthy",color:"#C1483B"},
-  {max:300,key:"vunhealthy",color:"#8B3F8C"},{max:9999,key:"hazardous",color:"#6B2338"},
+  {max:50,key:"good",color:"#4C9A6A",code:"D"},{max:100,key:"moderate",color:"#B98F1E",code:"U"},
+  {max:150,key:"usg",color:"#D97B29",code:"NO"},{max:200,key:"unhealthy",color:"#C1483B",code:"N"},
+  {max:300,key:"vunhealthy",color:"#8B3F8C",code:"VN"},{max:9999,key:"hazardous",color:"#6B2338",code:"OP"},
 ];
 // Maps TraceTheToxin's real SEPA-style station categories to our own
 // good/moderate/.../hazardous keys (by severity rank) — used only to pick
@@ -344,6 +352,11 @@ function fmtNum(n){
   return rounded.toString().replace(".", ",");
 }
 function levelForKey(key){ return AQI_LEVELS.find(l=>l.key===key) || AQI_LEVELS[0]; }
+// Small colored+lettered chip so severity reads without relying on color
+// alone (colorblind users; bright outdoor sun washing out hue differences).
+function levelChip(l, label){
+  return `<span aria-hidden="true" title="${label}" style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:16px;padding:0 4px;border-radius:3px;background:${l.color};color:#fff;font-size:9px;font-weight:700;letter-spacing:.2px;flex-shrink:0;">${l.code}</span>`;
+}
 // Demo stations use a numeric 0-500 style AQI; live TraceTheToxin stations
 // carry a SEPA category string instead (no numeric score). This handles both.
 function levelFor(station){
@@ -496,8 +509,23 @@ function currentStation(){ return STATIONS.find(s=>s.id===state.stationId) || ST
 /* =================================================================
    ACTIONS
 ================================================================= */
-function setLang(l){ state.lang=l; render(); }
-function setView(v){ state.view=v; state.loginError=""; if (v==="admin-login"){ state.authStep="request"; state.pendingEmail=""; } render(); window.scrollTo(0,0); }
+function setLang(l){
+  state.lang=l;
+  document.documentElement.lang = l==="sr-cyrl" ? "sr-Cyrl" : "sr-Latn";
+  render();
+}
+function setView(v){
+  state.view=v; state.loginError="";
+  if (v==="admin-login"){ state.authStep="request"; state.pendingEmail=""; }
+  render();
+  window.scrollTo(0,0);
+  // Move focus to the new view so keyboard/screen-reader users aren't left
+  // stranded on a now-destroyed nav button (the whole #app tree gets
+  // replaced on every navigation). Prefer the page's own heading; fall
+  // back to the app container itself (e.g. the home view has no <h1>).
+  const target = document.querySelector("#app h1") || document.getElementById("app");
+  if (target){ target.setAttribute("tabindex","-1"); target.focus({preventScroll:true}); }
+}
 function setStationId(id){ state.stationId=id; state.stationManuallySet=true; state.locatedViaGps=false; render(); }
 function setCityFirstStation(city){
   const first = STATIONS.find(s=>(s.city||t().city_unknown)===city);
@@ -625,6 +653,9 @@ async function publishArticle(e){
   }
 }
 
+function confirmDeleteArticle(id){
+  if (window.confirm(t().confirm_delete_article)) deleteArticle(id);
+}
 async function deleteArticle(id){
   const prev = state.articles;
   const article = state.articles.find(a=>a.id===id);
@@ -690,7 +721,8 @@ function renderHome(){
     const rows = STATIONS.filter(s=>(s.city||T_.city_unknown)===cityName && s.id!==state.stationId).map(s=>{
       const l = levelFor(s);
       const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
-      return `<button onclick="setStationId('${s.id}')"><span>${s.name}</span><span class="tabular" style="color:${l.color}">${badge}</span></button>`;
+      const catLabel = T_["cat_"+l.key];
+      return `<button onclick="setStationId('${s.id}')"><span>${s.name}</span><span class="tabular" style="display:inline-flex;align-items:center;gap:6px;color:${l.color}">${levelChip(l,catLabel)}${badge}</span></button>`;
     }).join("");
     if (!rows) return "";
     return `<div><div class="cityhead">${cityName}</div>${rows}</div>`;
@@ -730,8 +762,8 @@ function renderHome(){
           <div><span class="tabular" style="font-weight:700">${fmtNum(cur.pm10)}</span> µg/m³ ${T_.pm10}</div>
           ${extraPollutants}
         </div>
-        <div class="live-badge">${icon('radio',12)} ${state.loadingLive ? "…" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
-        ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:10px;color:#C1483B;margin-top:4px;max-width:380px;">${T_.live_error_prefix} ${state.liveError}</div>` : ""}
+        <div class="live-badge">${icon(state.loadingLive?'loader':'radio',12)} ${state.loadingLive ? "" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
+        ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:#93A3A6;margin-top:4px;max-width:380px;">${T_.live_error_public}</div>` : ""}
       </div>
       <div class="other-stations">
         <div class="oh">${T_.other_stations}</div>
@@ -899,7 +931,8 @@ function renderAdminPanel(){
   const dataRows = STATIONS.map(s=>{
     const l = levelFor(s);
     const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
-    return `<tr><td>${s.city ? s.city+" — " : ""}${s.name}</td><td class="tabular" style="color:${l.color};font-weight:700;">${badge}</td><td class="tabular">${fmtNum(s.pm25)}</td><td class="tabular">${fmtNum(s.pm10)}</td></tr>`;
+    const catLabel = T_["cat_"+l.key];
+    return `<tr><td>${s.city ? s.city+" — " : ""}${s.name}</td><td class="tabular" style="color:${l.color};font-weight:700;"><span style="display:inline-flex;align-items:center;gap:6px;">${levelChip(l,catLabel)}${badge}</span></td><td class="tabular">${fmtNum(s.pm25)}</td><td class="tabular">${fmtNum(s.pm10)}</td></tr>`;
   }).join("");
   const newsRows = state.articles.length ? state.articles.map(a=>{
     const thumbUrl = articleCoverUrl(a);
@@ -909,7 +942,7 @@ function renderAdminPanel(){
         ${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none';">` : ""}
         <div><div class="tt">${srDisplay(a.title_sr)}</div><div class="dd">${a.date}</div></div>
       </div>
-      <button class="del-btn" onclick="deleteArticle('${a.id}')">${icon('trash',16)}</button>
+      <button class="del-btn" onclick="confirmDeleteArticle('${a.id}')">${icon('trash',16)}</button>
     </div>`;
   }).join("")
     : `<p style="color:#5B6B70;font-size:13px;">${T_.no_articles_yet}</p>`;
@@ -939,7 +972,7 @@ function renderAdminPanel(){
         <div style="max-height:260px;overflow-y:auto;overflow-x:auto;">
           <table class="data"><thead><tr><th>${T_.station}</th><th>${T_.aqi}</th><th>${T_.pm25}</th><th>${T_.pm10}</th></tr></thead><tbody>${dataRows}</tbody></table>
         </div>
-        <div style="font-size:12px;color:#8B968B;margin-top:10px;">${state.loadingLive ? "…" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
+        <div style="font-size:12px;color:#8B968B;margin-top:10px;display:flex;align-items:center;gap:6px;">${state.loadingLive ? icon('loader',12,'#8B968B') : ""} ${state.loadingLive ? "" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
         ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:#C1483B;margin-top:4px;">${T_.live_error_prefix} ${state.liveError}</div>` : ""}
       </div>
     </div>
