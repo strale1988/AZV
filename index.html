@@ -38,7 +38,7 @@
   .spin{animation:spin 1s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
   header.topbar{border-bottom:1px solid var(--line);}
-  .topbar-inner{padding:calc(20px + env(safe-area-inset-top)) 20px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .topbar-inner{padding:calc(26px + env(safe-area-inset-top)) 20px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
   .brand{display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;padding:0;}
   .brand-logo{display:block;width:36px;height:36px;}
   .brand-name{font-size:26px;font-weight:700;color:var(--ink);}
@@ -151,7 +151,7 @@
   @media(max-width:480px){
     .brand-name{font-size:22px;}
     .brand-logo{width:30px;height:30px;}
-    .topbar-inner{padding:calc(18px + env(safe-area-inset-top)) 16px 18px;}
+    .topbar-inner{padding:calc(28px + env(safe-area-inset-top)) 16px 20px;}
     .wrap,.wrap-narrow,.wrap-report,.wrap-admin{padding:0 16px;}
     nav.tabs{gap:10px;}
     nav.tabs button{padding:10px 2px;font-size:13px;min-height:44px;}
@@ -215,6 +215,7 @@ const T = {
     cat_good:"Dobar", cat_moderate:"Umeren", cat_usg:"Nezdrav za osetljive", cat_unhealthy:"Nezdrav", cat_vunhealthy:"Vrlo nezdrav", cat_hazardous:"Opasan",
     demo_badge:"Demo podaci — povežite API ključ za podatke uživo", live_badge:"Podaci uživo",
     last_updated:"Ažurirano:", city_unknown:"Ostale stanice", live_error_prefix:"Greška pri učitavanju uživo podataka:",
+    gps_located:"Automatski izabrano prema vašoj lokaciji",
     news_title:"Vesti o kvalitetu vazduha", read_more:"Pročitaj više", collapse:"Sakrij", no_news:"Trenutno nema objavljenih vesti.",
     edu_title:"Vodič kroz zagađivače",
     industrial_title:"Industrijski izvori zagađenja",
@@ -249,6 +250,7 @@ const T = {
     cat_good:"Добар", cat_moderate:"Умерен", cat_usg:"Нездрав за осетљиве", cat_unhealthy:"Нездрав", cat_vunhealthy:"Врло нездрав", cat_hazardous:"Опасан",
     demo_badge:"Демо подаци — повежите API кључ за податке уживо", live_badge:"Подаци уживо",
     last_updated:"Ажурирано:", city_unknown:"Остале станице", live_error_prefix:"Грешка при учитавању уживо података:",
+    gps_located:"Аутоматски изабрано према вашој локацији",
     news_title:"Вести о квалитету ваздуха", read_more:"Прочитај више", collapse:"Сакриј", no_news:"Тренутно нема објављених вести.",
     edu_title:"Водич кроз загађиваче",
     industrial_title:"Индустријски извори загађења",
@@ -485,6 +487,7 @@ const state = {
   expandedArticle:null, expandedTerm:null,
   newsletterDone:false,
   liveMode:false, loadingLive:true, liveError:null,
+  stationManuallySet:false, locatedViaGps:false, locatingGps:false,
 };
 
 function t(){ return T[state.lang]; }
@@ -495,10 +498,11 @@ function currentStation(){ return STATIONS.find(s=>s.id===state.stationId) || ST
 ================================================================= */
 function setLang(l){ state.lang=l; render(); }
 function setView(v){ state.view=v; state.loginError=""; if (v==="admin-login"){ state.authStep="request"; state.pendingEmail=""; } render(); window.scrollTo(0,0); }
-function setStationId(id){ state.stationId=id; render(); }
+function setStationId(id){ state.stationId=id; state.stationManuallySet=true; state.locatedViaGps=false; render(); }
 function setCityFirstStation(city){
   const first = STATIONS.find(s=>(s.city||t().city_unknown)===city);
   if (first) state.stationId = first.id;
+  state.stationManuallySet=true; state.locatedViaGps=false;
   render();
 }
 function toggleArticle(id){ state.expandedArticle = state.expandedArticle===id ? null : id; render(); }
@@ -717,6 +721,7 @@ function renderHome(){
           </div>
           <select class="station" onchange="setStationId(this.value)">${stationOptions}</select>
         </div>
+        ${state.locatedViaGps ? `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#93A3A6;margin:-2px 0 6px;">${icon('pin',12,'#93A3A6')} ${T_.gps_located}</div>` : ""}
         <div class="tabular aqi-num" style="color:${level.color};font-size:${cur.sepaCategory?'clamp(28px,8vw,40px)':'clamp(44px,12vw,84px)'};">${headline}</div>
         <div class="aqi-cat" style="color:${level.color}">${cur.sepaCategory ? (cur.recordedAt ? `${T_.last_updated} ${formatStationTime(cur.recordedAt)}` : T_.aqi) : `${T_["cat_"+level.key]} · ${T_.aqi}`}</div>
         <p class="advisory">${T_["advisory_"+level.key]}</p>
@@ -1051,6 +1056,43 @@ async function loadLiveStations(){
 }
 
 /* =================================================================
+   GEOLOCATION — auto-select the station nearest the visitor, so
+   people don't have to hunt for their own city on first load. Falls
+   back silently (no error shown) if location is unavailable, denied,
+   or times out — the existing Novi Sad / first-station default just
+   stays in place. Only ever runs against stations that actually carry
+   real lat/lon (the live TraceTheToxin set); DEMO_STATIONS has none.
+================================================================= */
+function haversineKm(lat1, lon1, lat2, lon2){
+  const toRad = d => d * Math.PI / 180;
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function nearestStation(stations, lat, lon){
+  let best = null, bestDist = Infinity;
+  for (const s of stations){
+    if (typeof s.lat !== "number" || typeof s.lon !== "number") continue;
+    const d = haversineKm(lat, lon, s.lat, s.lon);
+    if (d < bestDist){ bestDist = d; best = s; }
+  }
+  return best;
+}
+function locateNearestStation(stations){
+  return new Promise(resolve => {
+    if (!("geolocation" in navigator)) { resolve(null); return; }
+    let done = false;
+    const finish = (v) => { if (!done){ done = true; resolve(v); } };
+    navigator.geolocation.getCurrentPosition(
+      pos => finish(nearestStation(stations, pos.coords.latitude, pos.coords.longitude)),
+      () => finish(null), // denied, unavailable, or timed out — silent fallback
+      { enableHighAccuracy:false, timeout:8000, maximumAge:600000 }
+    );
+  });
+}
+
+/* =================================================================
    MASTER RENDER
 ================================================================= */
 function render(){
@@ -1102,6 +1144,27 @@ function render(){
   }finally{
     state.loadingLive = false;
     render();
+  }
+
+  // Try to refine the default station to the visitor's actual nearest
+  // one via GPS. Runs after the first render so the page is already
+  // usable while the permission prompt/lookup happens in the
+  // background; if the user picks a station manually in the meantime,
+  // their choice wins and this is skipped.
+  if (state.liveMode && !state.stationManuallySet){
+    state.locatingGps = true;
+    try{
+      const nearest = await locateNearestStation(STATIONS);
+      if (nearest && !state.stationManuallySet){
+        state.stationId = nearest.id;
+        state.locatedViaGps = true;
+      }
+    }catch(e){
+      console.error("GPS station lookup failed:", e);
+    }finally{
+      state.locatingGps = false;
+      render();
+    }
   }
 })();
 </script>
