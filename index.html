@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alarm za vazduh</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400&family=PT+Sans:wght@400;700&display=swap');
+  :root{
+    --ink:#132029; --paper:#ECEDE8; --accent:#3E7C8C; --line:#D3D2C8;
+    --muted:#5B6B70; --muted2:#8B968B; --text2:#33454B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'PT Sans',Arial,sans-serif;background:var(--paper);color:var(--ink);}
+  .serif{font-family:'PT Serif',Georgia,serif;}
+  .tabular{font-variant-numeric:tabular-nums;}
+  button, input, textarea, select{font-family:inherit;}
+  a{color:inherit;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px;}
+  .wrap-narrow{max-width:760px;margin:0 auto;padding:0 20px;}
+  .wrap-report{max-width:620px;margin:0 auto;padding:0 20px;}
+  .wrap-admin{max-width:900px;margin:0 auto;padding:0 20px;}
+  .btn{display:inline-flex;align-items:center;gap:6px;border-radius:3px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:700;border:none;}
+  .btn-ink{background:var(--ink);color:var(--paper);}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .field{padding:9px 10px;border:1px solid var(--line);border-radius:3px;font-size:14px;width:100%;}
+  .icon{display:inline-flex;vertical-align:middle;}
+  .spin{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  header.topbar{border-bottom:1px solid var(--line);}
+  .topbar-inner{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .brand{display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;padding:0;}
+  .brand-name{font-size:20px;font-weight:700;color:var(--ink);}
+  .navgroup{display:flex;align-items:center;gap:16px;font-size:14px;flex-wrap:wrap;}
+  nav.tabs{display:flex;gap:14px;}
+  nav.tabs button{background:none;border:none;cursor:pointer;padding:4px 0;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;}
+  nav.tabs button.active{color:var(--ink);font-weight:700;border-bottom:2px solid var(--accent);}
+  .langbox{display:flex;align-items:center;gap:4px;border-left:1px solid var(--line);padding-left:14px;}
+  .langbox button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted2);padding:2px 4px;}
+  .langbox button.active{font-weight:700;color:var(--ink);}
+  .adminbtn{display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--paper);border:none;border-radius:3px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:700;}
+  .dash{background:var(--ink);color:var(--paper);}
+  .dash-inner{padding:36px 20px 30px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:24px;}
+  .dash-selects{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+  .dash-selects select{background:transparent;color:var(--paper);border:none;font-size:15px;font-weight:700;cursor:pointer;}
+  .dash-selects select.station{color:#C7D1D3;border:1px solid #33454B;border-radius:3px;font-size:13px;padding:2px 6px;}
+  .dash-selects select option{color:var(--ink);}
+  .aqi-num{font-size:84px;font-weight:700;line-height:1;}
+  .aqi-cat{font-size:15px;font-weight:700;margin-top:4px;}
+  .advisory{max-width:380px;font-size:14px;line-height:1.5;color:#C7D1D3;margin-top:12px;}
+  .pollutant-row{display:flex;gap:20px;margin-top:16px;font-size:13px;}
+  .live-badge{margin-top:18px;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#93A3A6;border:1px solid #33454B;border-radius:3px;padding:4px 8px;}
+  .other-stations{min-width:240px;max-height:320px;overflow-y:auto;}
+  .other-stations .oh{font-size:12px;letter-spacing:.3px;color:#93A3A6;margin-bottom:10px;}
+  .other-stations .cityhead{font-size:11px;color:#5B6B70;margin:8px 0 4px;}
+  .other-stations button{display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;border-bottom:1px solid #26363C;padding:5px 0;cursor:pointer;color:var(--paper);width:100%;text-align:left;}
+  .other-stations button span:last-child{font-weight:700;}
+  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:40px;padding:36px 20px 60px;}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr;} .dash-inner{flex-direction:column;}}
+  .sectionhead{display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:0;margin-bottom:16px;}
+  .sectionhead span.txt{font-size:20px;font-weight:700;color:var(--ink);}
+  .article-row{border-bottom:1px solid var(--line);padding:14px 0;}
+  .article-date{font-size:12px;color:var(--muted2);margin-bottom:4px;}
+  .article-title{font-weight:700;margin-bottom:6px;line-height:1.3;}
+  .article-title.compact{font-size:16px;}
+  .article-title.full{font-size:20px;}
+  .article-excerpt{font-size:14px;color:var(--text2);line-height:1.5;}
+  .readmore{background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;padding:8px 0 0;font-weight:700;}
+  .article-body{font-size:14px;line-height:1.6;color:var(--text2);margin-top:8px;}
+  .pollutant-mini{border-bottom:1px solid var(--line);padding:10px 0;}
+  .pollutant-mini .n{font-weight:700;font-size:14px;}
+  .pollutant-mini .d{font-size:13px;color:#4B575C;}
+  .newsletter-box{margin-top:24px;border:1px solid var(--line);padding:16px;border-radius:3px;}
+  .newsletter-box .t{font-weight:700;font-size:14px;margin-bottom:8px;}
+  .glossary-item{border-bottom:1px solid var(--line);}
+  .glossary-head{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:none;cursor:pointer;padding:16px 0;text-align:left;}
+  .glossary-head .n{font-size:19px;font-weight:700;color:var(--ink);}
+  .glossary-body{padding-bottom:18px;font-size:14px;line-height:1.6;color:var(--text2);}
+  .chev{transition:transform .15s;}
+  .chev.open{transform:rotate(180deg);}
+  .industrial-item{border-bottom:1px solid var(--line);padding:14px 0;}
+  .industrial-item .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+  .industrial-item .name{font-weight:700;font-size:15px;}
+  .industrial-item .place{font-size:12px;color:var(--muted2);}
+  .industrial-item .desc{font-size:13.5px;color:var(--text2);margin-top:4px;line-height:1.5;}
+  .report-card{border:1px solid var(--line);border-radius:4px;padding:18px;margin-bottom:30px;}
+  .report-card .t{font-weight:700;font-size:15px;margin-bottom:4px;}
+  .report-card .d{font-size:13px;color:var(--muted);margin-bottom:14px;}
+  .or-divider{font-size:13px;color:var(--muted2);margin-bottom:16px;}
+  .form-col{display:flex;flex-direction:column;gap:10px;}
+  .label{font-size:13px;color:var(--muted);display:block;}
+  .label input{display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--line);border-radius:3px;font-size:14px;}
+  .error-text{color:#C1483B;font-size:13px;}
+  .admin-empty{max-width:500px;margin:0 auto;padding:60px 20px;text-align:center;color:var(--muted);}
+  .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;}
+  @media(max-width:700px){.admin-grid{grid-template-columns:1fr;}}
+  table.data{width:100%;border-collapse:collapse;font-size:13px;}
+  table.data th{padding:4px 0;text-align:left;}
+  table.data thead tr{border-bottom:1px solid var(--line);color:var(--muted);position:sticky;top:0;background:var(--paper);}
+  table.data tbody tr{border-bottom:1px solid var(--line);}
+  table.data td{padding:6px 0;}
+  .manage-row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:10px 0;}
+  .manage-row .tt{font-weight:700;font-size:14px;}
+  .manage-row .dd{font-size:12px;color:var(--muted2);}
+  .del-btn{background:none;border:none;cursor:pointer;color:#C1483B;}
+  footer.foot{border-top:1px solid var(--line);padding:20px;text-align:center;font-size:12px;color:var(--muted2);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+/* =================================================================
+   ICONS (simple generic outline set, no external dependency)
+================================================================= */
+function icon(name, size, color){
+  size = size || 16; color = color || 'currentColor';
+  const base = `viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+  const paths = {
+    wind: `<path d="M3 8h11a2 2 0 1 0-2-2"/><path d="M3 12h15a2 2 0 1 1-2 2"/><path d="M3 16h8"/>`,
+    newspaper: `<rect x="3" y="5" width="14" height="16" rx="1"/><path d="M17 9h4v10a2 2 0 0 1-2 2h-2"/><path d="M7 9h6M7 13h6M7 17h4"/>`,
+    book: `<path d="M4 4.5h7a3 3 0 0 1 3 3V20a2 2 0 0 0-2-2H4z"/><path d="M20 4.5h-7a3 3 0 0 0-3 3V20a2 2 0 0 1 2-2h8z"/>`,
+    login: `<path d="M11 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/><path d="M15 12H3"/><path d="M9 8l4 4-4 4"/>`,
+    logout: `<path d="M13 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/><path d="M9 12h12"/><path d="M15 16l4-4-4-4"/>`,
+    plus: `<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>`,
+    trash: `<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/>`,
+    chevron: `<polyline points="6 9 12 15 18 9"/>`,
+    pin: `<path d="M12 21s7-7.58 7-12a7 7 0 1 0-14 0c0 4.42 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/>`,
+    globe: `<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/>`,
+    shield: `<path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><polyline points="8.5 12 11 14.5 15.5 9.5"/>`,
+    radio: `<circle cx="12" cy="12" r="2"/><path d="M8.5 8.5a5 5 0 0 0 0 7"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/>`,
+    factory: `<path d="M2 21V11l5 3v-3l5 3V8l5 3V6h3v15z"/>`,
+    external: `<path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/>`,
+    send: `<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>`,
+    flag: `<path d="M4 22V3"/><path d="M4 4h14l-3 4 3 4H4"/>`,
+    loader: `<circle cx="12" cy="12" r="9" stroke-dasharray="42" stroke-dashoffset="15"/>`,
+  };
+  const spinClass = name === 'loader' ? ' class="icon spin"' : ' class="icon"';
+  return `<svg ${base}${spinClass}>${paths[name] || ''}</svg>`;
+}
+
+/* =================================================================
+   I18N
+================================================================= */
+const T = {
+  "sr-latn": {
+    title:"Alarm za vazduh", nav_home:"Pregled", nav_news:"Vesti", nav_edu:"Edukacija", nav_report:"Prijava", nav_admin:"Administracija",
+    login:"Prijava", logout:"Odjava", aqi:"AQI", pm25:"PM2.5", pm10:"PM10", other_stations:"Ostale stanice",
+    advisory_good:"Vazduh je čist. Nema ograničenja za aktivnosti napolju.",
+    advisory_moderate:"Prihvatljiv kvalitet. Osetljive grupe treba da prate simptome.",
+    advisory_usg:"Osetljive grupe (deca, stariji, astmatičari) treba da smanje duži boravak napolju.",
+    advisory_unhealthy:"Svima se preporučuje da ograniče duži boravak napolju.",
+    advisory_vunhealthy:"Izbegavajte fizičku aktivnost napolju. Ostanite u zatvorenom prostoru.",
+    advisory_hazardous:"Zdravstveni rizik za celu populaciju. Ostanite unutra, provetravajte kratko.",
+    cat_good:"Dobar", cat_moderate:"Umeren", cat_usg:"Nezdrav za osetljive", cat_unhealthy:"Nezdrav", cat_vunhealthy:"Vrlo nezdrav", cat_hazardous:"Opasan",
+    demo_badge:"Demo podaci — povežite API ključ za podatke uživo", live_badge:"Podaci uživo",
+    last_updated:"Ažurirano:", city_unknown:"Ostale stanice", live_error_prefix:"Greška pri učitavanju uživo podataka:",
+    news_title:"Vesti o kvalitetu vazduha", read_more:"Pročitaj više", collapse:"Sakrij", no_news:"Trenutno nema objavljenih vesti.",
+    edu_title:"Vodič kroz zagađivače",
+    industrial_title:"Industrijski izvori zagađenja",
+    industrial_intro:"Pored saobraćaja i grejanja, veći deo zagađenja u Srbiji potiče od industrijskih postrojenja.",
+    newsletter_title:"Prijavite se na obaveštenja", newsletter_ph:"vasa@email.com", newsletter_btn:"Prijavi se", newsletter_ok:"Hvala! Proverite email za potvrdu.",
+    admin_login_title:"Prijava za administratore", username:"Korisničko ime", password:"Lozinka", login_btn:"Prijavi se",
+    login_error:"Pogrešno korisničko ime ili lozinka.", login_hint:"Demo nalog: admin / vazduh2026",
+    admin_panel:"Administratorska tabla", add_article:"Nova vest", article_title:"Naslov", article_excerpt:"Kratak opis", article_body:"Tekst vesti", publish:"Objavi",
+    manage_news:"Upravljanje vestima", data_overview:"Pregled podataka", no_articles_yet:"Još uvek nema objavljenih vesti.", station:"Stanica",
+    footer_note:"Podaci o kvalitetu vazduha služe isključivo u informativne svrhe.",
+    report_title:"Prijavite zagađenje vazduha",
+    report_intro:"Primetili ste dim, neprijatan miris ili gustu maglu koja ne izgleda kao obična magla? Prijavite to — svaka prijava pomaže da se identifikuju zagađivači.",
+    report_external_title:"Prijava preko TraceTheToxin",
+    report_external_desc:"Zajednička mreža za prijavu zagađenja vazduha — mapa uživo, kategorije (dim, sumpor, hemikalije...) i praćenje izvora po pravcu vetra. Otvara se u novoj kartici.",
+    report_external_btn:"Otvori TraceTheToxin",
+    edu_smell_title:"Vodič po mirisu", edu_smell_intro:"Neprijatan miris je često prvi znak zagađenja. Evo šta pojedini mirisi obično znače.",
+    smell_if:"Ako osetite:",
+  },
+  "sr-cyrl": {
+    title:"Аларм за ваздух", nav_home:"Преглед", nav_news:"Вести", nav_edu:"Едукација", nav_report:"Пријава", nav_admin:"Администрација",
+    login:"Пријава", logout:"Одјава", aqi:"AQI", pm25:"PM2.5", pm10:"PM10", other_stations:"Остале станице",
+    advisory_good:"Ваздух је чист. Нема ограничења за активности напољу.",
+    advisory_moderate:"Прихватљив квалитет. Осетљиве групе треба да прате симптоме.",
+    advisory_usg:"Осетљиве групе (деца, старији, астматичари) треба да смање дужи боравак напољу.",
+    advisory_unhealthy:"Свима се препоручује да ограниче дужи боравак напољу.",
+    advisory_vunhealthy:"Избегавајте физичку активност напољу. Останите у затвореном простору.",
+    advisory_hazardous:"Здравствени ризик за целу популацију. Останите унутра, проветравајте кратко.",
+    cat_good:"Добар", cat_moderate:"Умерен", cat_usg:"Нездрав за осетљиве", cat_unhealthy:"Нездрав", cat_vunhealthy:"Врло нездрав", cat_hazardous:"Опасан",
+    demo_badge:"Демо подаци — повежите API кључ за податке уживо", live_badge:"Подаци уживо",
+    last_updated:"Ажурирано:", city_unknown:"Остале станице", live_error_prefix:"Грешка при учитавању уживо података:",
+    news_title:"Вести о квалитету ваздуха", read_more:"Прочитај више", collapse:"Сакриј", no_news:"Тренутно нема објављених вести.",
+    edu_title:"Водич кроз загађиваче",
+    industrial_title:"Индустријски извори загађења",
+    industrial_intro:"Поред саобраћаја и грејања, већи део загађења у Србији потиче од индустријских постројења.",
+    newsletter_title:"Пријавите се на обавештења", newsletter_ph:"vasa@email.com", newsletter_btn:"Пријави се", newsletter_ok:"Хвала! Проверите имејл за потврду.",
+    admin_login_title:"Пријава за администраторе", username:"Корисничко име", password:"Лозинка", login_btn:"Пријави се",
+    login_error:"Погрешно корисничко име или лозинка.", login_hint:"Демо налог: admin / vazduh2026",
+    admin_panel:"Административна табла", add_article:"Нова вест", article_title:"Наслов", article_excerpt:"Кратак опис", article_body:"Текст вести", publish:"Објави",
+    manage_news:"Управљање вестима", data_overview:"Преглед података", no_articles_yet:"Још увек нема објављених вести.", station:"Станица",
+    footer_note:"Подаци о квалитету ваздуха служе искључиво у информативне сврхе.",
+    report_title:"Пријавите загађење ваздуха",
+    report_intro:"Приметили сте дим, непријатан мирис или густу маглу која не изгледа као обична магла? Пријавите то — свака пријава помаже да се идентификују загађивачи.",
+    report_external_title:"Пријава преко TraceTheToxin",
+    report_external_desc:"Заједничка мрежа за пријаву загађења ваздуха — мапа уживо, категорије (дим, сумпор, хемикалије...) и праћење извора по правцу ветра. Отвара се у новој картици.",
+    report_external_btn:"Отвори TraceTheToxin",
+    edu_smell_title:"Водич по мирису", edu_smell_intro:"Непријатан мирис је често први знак загађења. Ево шта поједини мириси обично значе.",
+    smell_if:"Ако осетите:",
+  },
+  en: {
+    title:"Air Alarm", nav_home:"Overview", nav_news:"News", nav_edu:"Education", nav_report:"Report", nav_admin:"Admin",
+    login:"Log in", logout:"Log out", aqi:"AQI", pm25:"PM2.5", pm10:"PM10", other_stations:"Other stations",
+    advisory_good:"Air is clean. No restrictions on outdoor activity.",
+    advisory_moderate:"Acceptable air quality. Sensitive groups should watch for symptoms.",
+    advisory_usg:"Sensitive groups (children, elderly, asthmatics) should limit prolonged outdoor exertion.",
+    advisory_unhealthy:"Everyone should limit prolonged outdoor exertion.",
+    advisory_vunhealthy:"Avoid outdoor physical activity. Stay indoors where possible.",
+    advisory_hazardous:"Health risk for the entire population. Stay indoors, ventilate briefly.",
+    cat_good:"Good", cat_moderate:"Moderate", cat_usg:"Unhealthy for sensitive groups", cat_unhealthy:"Unhealthy", cat_vunhealthy:"Very unhealthy", cat_hazardous:"Hazardous",
+    demo_badge:"Demo data — connect an API key for live readings", live_badge:"Live data",
+    last_updated:"Updated:", city_unknown:"Other stations", live_error_prefix:"Live data load error:",
+    news_title:"Air quality news", read_more:"Read more", collapse:"Collapse", no_news:"No articles published yet.",
+    edu_title:"Guide to pollutants",
+    industrial_title:"Industrial pollution sources",
+    industrial_intro:"Beyond traffic and heating, much of Serbia's pollution comes from industrial facilities.",
+    newsletter_title:"Get alerts by email", newsletter_ph:"you@email.com", newsletter_btn:"Subscribe", newsletter_ok:"Thanks! Check your inbox to confirm.",
+    admin_login_title:"Admin sign in", username:"Username", password:"Password", login_btn:"Sign in",
+    login_error:"Incorrect username or password.", login_hint:"Demo account: admin / vazduh2026",
+    admin_panel:"Admin dashboard", add_article:"New article", article_title:"Title", article_excerpt:"Short summary", article_body:"Body text", publish:"Publish",
+    manage_news:"Manage news", data_overview:"Data overview", no_articles_yet:"No articles published yet.", station:"Station",
+    footer_note:"Air quality data is provided for informational purposes only.",
+    report_title:"Report air pollution",
+    report_intro:"Noticed smoke, a strong smell, or haze that isn't ordinary fog? Report it — every submission helps identify polluters.",
+    report_external_title:"Report via TraceTheToxin",
+    report_external_desc:"A community air-reporting network with a live map, categorized reports (smoke, sulfur, chemicals...), and wind-trail source tracing. Opens in a new tab.",
+    report_external_btn:"Open TraceTheToxin",
+    edu_smell_title:"Guide by smell", edu_smell_intro:"An unusual smell is often the first sign of pollution. Here's what common smells usually mean.",
+    smell_if:"If you notice:",
+  },
+};
+
+/* =================================================================
+   DATA
+================================================================= */
+const AQI_LEVELS = [
+  {max:50,key:"good",color:"#4C9A6A"},{max:100,key:"moderate",color:"#B98F1E"},
+  {max:150,key:"usg",color:"#D97B29"},{max:200,key:"unhealthy",color:"#C1483B"},
+  {max:300,key:"vunhealthy",color:"#8B3F8C"},{max:9999,key:"hazardous",color:"#6B2338"},
+];
+// Maps TraceTheToxin's real SEPA-style station categories to our own
+// good/moderate/.../hazardous keys (by severity rank) — used only to pick
+// the marker color and the advisory paragraph's severity tier. The visible
+// headline uses SEPA_LABELS below instead, so we never show our own
+// US-AQI-style wording ("unhealthy for sensitive groups") next to a
+// reading that's actually on Serbia's DOBAR..IZUZETNO ZAGAĐEN scale.
+const SEPA_TO_KEY = {
+  "DOBAR":"good", "PRIHVATLJIV":"moderate", "UMEREN":"usg",
+  "ZAGAĐEN":"unhealthy", "VEOMA ZAGAĐEN":"vunhealthy", "IZUZETNO ZAGAĐEN":"hazardous",
+};
+const SEPA_LABELS = {
+  "DOBAR":            {"sr-latn":"Dobar",            "sr-cyrl":"Добар",             en:"Good"},
+  "PRIHVATLJIV":      {"sr-latn":"Prihvatljiv",       "sr-cyrl":"Прихватљив",        en:"Acceptable"},
+  "UMEREN":           {"sr-latn":"Umeren",            "sr-cyrl":"Умерен",            en:"Moderate"},
+  "ZAGAĐEN":          {"sr-latn":"Zagađen",           "sr-cyrl":"Загађен",           en:"Polluted"},
+  "VEOMA ZAGAĐEN":    {"sr-latn":"Veoma zagađen",     "sr-cyrl":"Веома загађен",     en:"Very polluted"},
+  "IZUZETNO ZAGAĐEN": {"sr-latn":"Izuzetno zagađen",  "sr-cyrl":"Изузетно загађен",  en:"Extremely polluted"},
+};
+function sepaLabel(cat){ return (SEPA_LABELS[cat] && SEPA_LABELS[cat][state.lang]) || cat || "–"; }
+function levelForKey(key){ return AQI_LEVELS.find(l=>l.key===key) || AQI_LEVELS[0]; }
+// Demo stations use a numeric 0-500 style AQI; live TraceTheToxin stations
+// carry a SEPA category string instead (no numeric score). This handles both.
+function levelFor(station){
+  if (station.sepaCategory) return levelForKey(SEPA_TO_KEY[station.sepaCategory] || "good");
+  return AQI_LEVELS.find(l=>station.aqi<=l.max) || AQI_LEVELS[AQI_LEVELS.length-1];
+}
+function formatStationTime(iso){
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = n => String(n).padStart(2,"0");
+  return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+const DEMO_STATIONS = [
+  {id:"ns-liman",city:"Novi Sad",name:"Liman",aqi:54,pm25:19,pm10:33},
+  {id:"ns-centar",city:"Novi Sad",name:"Centar",aqi:49,pm25:16,pm10:29},
+  {id:"ns-sever",city:"Novi Sad",name:"Sever (industrijska zona)",aqi:71,pm25:27,pm10:46},
+  {id:"ns-detelinara",city:"Novi Sad",name:"Detelinara",aqi:57,pm25:21,pm10:36},
+  {id:"beocin-centar",city:"Beočin",name:"Centar",aqi:52,pm25:18,pm10:31},
+  {id:"beocin-cementara",city:"Beočin",name:"Cementara (industrijska zona)",aqi:84,pm25:31,pm10:55},
+  {id:"bg-novi-bg",city:"Beograd",name:"Novi Beograd",aqi:62,pm25:24,pm10:41},
+  {id:"bg-stari-grad",city:"Beograd",name:"Stari Grad",aqi:58,pm25:22,pm10:38},
+  {id:"bg-vracar",city:"Beograd",name:"Vračar",aqi:55,pm25:20,pm10:35},
+  {id:"bg-zemun",city:"Beograd",name:"Zemun",aqi:60,pm25:23,pm10:39},
+  {id:"bg-pancevacki-most",city:"Beograd",name:"Pančevački most (industrijska zona)",aqi:79,pm25:29,pm10:51},
+  {id:"pancevo-centar",city:"Pančevo",name:"Centar",aqi:74,pm25:27,pm10:47},
+  {id:"pancevo-petrohemija",city:"Pančevo",name:"Petrohemija / rafinerija",aqi:96,pm25:35,pm10:61},
+  {id:"smederevo-centar",city:"Smederevo",name:"Centar",aqi:88,pm25:33,pm10:57},
+  {id:"smederevo-zelezara",city:"Smederevo",name:"Železara",aqi:121,pm25:46,pm10:79},
+  {id:"nis-medijana",city:"Niš",name:"Medijana",aqi:68,pm25:25,pm10:43},
+  {id:"nis-crveni-krst",city:"Niš",name:"Crveni Krst (industrijska zona)",aqi:89,pm25:33,pm10:56},
+  {id:"kg-centar",city:"Kragujevac",name:"Centar",aqi:47,pm25:14,pm10:27},
+  {id:"kg-zastava",city:"Kragujevac",name:"Zastava (industrijska zona)",aqi:76,pm25:28,pm10:48},
+  {id:"su-centar",city:"Subotica",name:"Centar",aqi:39,pm25:11,pm10:21},
+  {id:"valjevo-centar",city:"Valjevo",name:"Centar",aqi:58,pm25:21,pm10:36},
+  {id:"bor-topionica",city:"Bor",name:"Topionica (RTB Bor)",aqi:142,pm25:55,pm10:88},
+  {id:"kostolac-te",city:"Kostolac",name:"TE Kostolac (termoelektrana)",aqi:103,pm25:39,pm10:66},
+  {id:"zrenjanin-centar",city:"Zrenjanin",name:"Centar",aqi:61,pm25:23,pm10:39},
+  {id:"zrenjanin-azotara",city:"Zrenjanin",name:"Azotara (industrijska zona)",aqi:92,pm25:34,pm10:58},
+  {id:"sabac-centar",city:"Šabac",name:"Centar",aqi:65,pm25:24,pm10:41},
+  {id:"sabac-zorka",city:"Šabac",name:"Zorka (industrijska zona)",aqi:108,pm25:41,pm10:69},
+  {id:"kraljevo-centar",city:"Kraljevo",name:"Centar",aqi:56,pm25:20,pm10:34},
+  {id:"cacak-centar",city:"Čačak",name:"Centar",aqi:51,pm25:18,pm10:30},
+  {id:"leskovac-centar",city:"Leskovac",name:"Centar",aqi:63,pm25:23,pm10:40},
+  {id:"sombor-centar",city:"Sombor",name:"Centar",aqi:42,pm25:12,pm10:23},
+  {id:"vrsac-centar",city:"Vršac",name:"Centar",aqi:59,pm25:21,pm10:36},
+  {id:"loznica-centar",city:"Loznica",name:"Centar",aqi:67,pm25:25,pm10:42},
+  {id:"sr-mitrovica-centar",city:"Sremska Mitrovica",name:"Centar",aqi:53,pm25:19,pm10:32},
+  {id:"zajecar-centar",city:"Zaječar",name:"Centar",aqi:69,pm25:26,pm10:44},
+];
+// STATIONS starts out pointing at the baked-in demo list and gets swapped
+// for real TraceTheToxin stations in loadLiveStations() if that fetch
+// succeeds — everything below reads from this variable, never DEMO_STATIONS
+// directly, so the rest of the app doesn't care which one is active.
+let STATIONS = DEMO_STATIONS;
+function cityOrder(){ return [...new Set(STATIONS.map(s=>s.city || t().city_unknown))]; }
+
+let SEED_ARTICLES = [
+  {id:"seed-1",date:"2026-09-10",
+    title_sr:"Koncentracija čađi u porastu u Beogradu tokom jutarnjih sati", title_en:"Soot levels rising in Belgrade during morning hours",
+    excerpt_sr:"Merne stanice beleže povećanje PM10 čestica između 7 i 9 časova ujutru, usled saobraćaja i grejne sezone.",
+    excerpt_en:"Monitoring stations recorded a rise in PM10 particles between 7 and 9 a.m., linked to traffic and the start of the heating season.",
+    body_sr:"Prema podacima nekoliko mernih stanica u Beogradu, koncentracija PM10 čestica beleži rast tokom jutarnjeg špica. Stručnjaci navode kombinaciju saobraćajnih gasova, individualnih ložišta i vremenskih uslova bez vetra kao glavne uzroke.",
+    body_en:"Data from several Belgrade monitoring stations shows a rise in PM10 concentrations during the morning rush. Experts point to a combination of traffic emissions, household heating, and windless conditions."},
+  {id:"seed-2",date:"2026-09-05",
+    title_sr:"Novi Sad uvodi dodatnu mernu stanicu u naselju Liman", title_en:"Novi Sad adds new monitoring station in Liman district",
+    excerpt_sr:"Gradska uprava najavljuje proširenje mreže senzora radi tačnijeg praćenja kvaliteta vazduha po naseljima.",
+    excerpt_en:"City authorities announce a sensor network expansion for more accurate neighborhood-level air quality tracking.",
+    body_sr:"Grad Novi Sad pokrenuo je proces postavljanja nove merne stanice u naselju Liman, sa ciljem preciznijeg praćenja lokalnih vrednosti PM2.5 i PM10 čestica.",
+    body_en:"The city of Novi Sad has begun installing a new monitoring station in the Liman neighborhood, aiming for more precise local tracking of PM2.5 and PM10 levels."},
+];
+
+const POLLUTANTS = [
+  {key:"pm25",name:"PM2.5",def_sr:"Sitne čestice prečnika manjeg od 2,5 mikrometra koje prodiru duboko u pluća i krvotok.",def_en:"Fine particles under 2.5 micrometers that penetrate deep into the lungs and bloodstream.",src_sr:"Sagorevanje (saobraćaj, grejanje, industrija), šumski požari.",src_en:"Combustion (traffic, heating, industry), wildfires.",smell_sr:"Sam po sebi bez mirisa, ali prati ga miris dima ili sagorevanja iz izvora.",smell_en:"Odorless on its own, but usually accompanied by the smoky smell of the combustion source."},
+  {key:"pm10",name:"PM10",def_sr:"Grublje čestice prašine, polena i čađi prečnika do 10 mikrometara.",def_en:"Coarser dust, pollen and soot particles up to 10 micrometers.",src_sr:"Građevinski radovi, putna prašina, poljoprivreda.",src_en:"Construction, road dust, agriculture.",smell_sr:"Bez mirisa; ponekad se oseti kao prašnjav ili zemljan zadah.",smell_en:"Odorless; sometimes noticeable as a dusty or earthy feel in the air."},
+  {key:"o3",name:"O₃ (prizemni ozon)",def_sr:"Nastaje fotohemijskim reakcijama zagađivača na suncu, iritira disajne puteve.",def_en:"Formed by sunlight-driven reactions of pollutants; irritates airways.",src_sr:"Sekundarni zagađivač — nastaje iz izduvnih gasova i sunčeve svetlosti.",src_en:"Secondary pollutant formed from vehicle exhaust and sunlight.",smell_sr:"Oštar, „metalni” miris — sličan mirisu posle grmljavine ili blizu fotokopir aparata.",smell_en:"A sharp, metallic smell — similar to the air after a thunderstorm or near a photocopier."},
+  {key:"no2",name:"NO₂",def_sr:"Gas koji nadražuje pluća i pogoršava astmu, uglavnom iz saobraćaja.",def_en:"A gas that irritates the lungs and worsens asthma, mostly from traffic.",src_sr:"Motori sa unutrašnjim sagorevanjem, termoelektrane.",src_en:"Internal combustion engines, power plants.",smell_sr:"Oštar, zagušljiv miris nalik izduvnim gasovima.",smell_en:"A sharp, acrid smell similar to vehicle exhaust."},
+  {key:"so2",name:"SO₂",def_sr:"Nastaje sagorevanjem uglja i nafte sa sumporom, uzrokuje kiselu kišu.",def_en:"Produced by burning sulfur-containing coal and oil; causes acid rain.",src_sr:"Termoelektrane na ugalj, topionice, industrija.",src_en:"Coal power plants, smelters, heavy industry.",smell_sr:"Oštar miris na upaljenu šibicu ili sumpor.",smell_en:"A sharp smell like a struck match or sulfur."},
+  {key:"co",name:"CO",def_sr:"Bezbojan i bez mirisa, smanjuje sposobnost krvi da prenosi kiseonik.",def_en:"Colorless and odorless; reduces the blood's ability to carry oxygen.",src_sr:"Nepotpuno sagorevanje goriva.",src_en:"Incomplete combustion of fuel.",smell_sr:"Potpuno bez mirisa — zato je opasan, ne može se osetiti na vreme.",smell_en:"Completely odorless — which is what makes it dangerous, since it can't be smelled in time."},
+  {key:"heavy",name:"Teški metali (As, Pb, Cd)",def_sr:"Arsen, olovo i kadmijum vezani za čestice, akumuliraju se u telu tokom vremena.",def_en:"Arsenic, lead and cadmium bound to particles; accumulate in the body over time.",src_sr:"Topljenje metalnih ruda, sagorevanje uglja.",src_en:"Metal ore smelting, coal combustion.",smell_sr:"Bez sopstvenog mirisa; obično prate metalni ili sumporni zadah iz topionice.",smell_en:"No smell of their own; usually carried alongside the metallic or sulfurous smell from a smelter."},
+];
+
+const SMELLS = [
+  {key:"smoke",name_sr:"Dim",name_en:"Smoke",desc_sr:"Dim od sagorevanja drveta, uglja ili otpada. Nosi visok nivo PM2.5 — najčešće individualna ložišta zimi ili šumski/otvoreni požari.",desc_en:"Smoke from burning wood, coal, or waste. Carries high PM2.5 — most often household heating in winter or wildfires/open burning."},
+  {key:"sewage",name_sr:"Kanalizacija",name_en:"Sewage",desc_sr:"Zadah na trulo/fekalije, obično iz kanalizacionog sistema ili postrojenja za preradu otpadnih voda.",desc_en:"A rotten, sewage-like odor, usually from the sewer system or a wastewater treatment plant."},
+  {key:"sulfur",name_sr:"Sumpor",name_en:"Sulfur",desc_sr:"Oštar miris na sumpor ili upaljenu šibicu — ukazuje na SO₂, često iz termoelektrana, topionica ili rafinerija.",desc_en:"A sharp sulfur or burnt-match smell — points to SO₂, often from power plants, smelters, or refineries."},
+  {key:"burnt_plastic",name_sr:"Zapaljena plastika",name_en:"Burnt plastic",desc_sr:"Oštar, zagušljiv hemijski miris — obično nelegalno spaljivanje otpada, oslobađa toksične gasove.",desc_en:"A sharp, acrid chemical smell — usually illegal waste burning, which releases toxic gases."},
+  {key:"chemicals",name_sr:"Hemikalije",name_en:"Chemicals",desc_sr:"Miris rastvarača, lepka, farbe ili drugi izraženi „hemijski” zadah — obično industrijska postrojenja ili petrohemija.",desc_en:"The smell of solvents, glue, paint, or another sharp chemical odor — usually industrial facilities or petrochemical plants."},
+  {key:"waste",name_sr:"Otpad",name_en:"Waste",desc_sr:"Zadah truljenja ili smeća — obično deponije ili nelegalno odlaganje otpada u blizini.",desc_en:"A rotting or garbage smell — usually a landfill or illegal waste dumping nearby."},
+  {key:"clean_air",name_sr:"Čist vazduh",name_en:"Clean air",desc_sr:"Nema primetnog mirisa — dobar znak, nema potrebe za prijavom.",desc_en:"No noticeable smell — a good sign, nothing to report."},
+  {key:"unknown",name_sr:"Nepoznato",name_en:"Unknown",desc_sr:"Neprijatan miris čiji izvor ne prepoznajete — i dalje vredi prijaviti, pomaže u praćenju obrazaca.",desc_en:"An unpleasant smell you can't identify the source of — still worth reporting, it helps track patterns."},
+  {key:"other",name_sr:"Drugo",name_en:"Other",desc_sr:"Bilo koji drugi neobičan miris koji ne spada u prethodne kategorije.",desc_en:"Any other unusual smell that doesn't fit the categories above."},
+];
+
+const INDUSTRIAL_SOURCES = [
+  {name_sr:"Cementara Beočin",name_en:"Beočin cement plant",place:"Beočin",desc_sr:"Jedna od najvećih cementara u regionu; ispušta prašinu i sumpor-dioksid.",desc_en:"One of the region's largest cement plants; releases dust and sulfur dioxide."},
+  {name_sr:"Topionica bakra RTB Bor",name_en:"RTB Bor copper smelter",place:"Bor",desc_sr:"Topljenje bakarne rude oslobađa sumpor-dioksid i teške metale, uključujući arsen.",desc_en:"Copper ore smelting releases sulfur dioxide and heavy metals, including arsenic."},
+  {name_sr:"Termoelektrane TENT i Kostolac",name_en:"TENT & Kostolac power plants",place:"Obrenovac / Kostolac",desc_sr:"Termoelektrane na lignit su najveći pojedinačni izvor SO₂ i pepela u Srbiji.",desc_en:"Lignite-fired power plants are Serbia's single largest source of SO₂ and fly ash."},
+  {name_sr:"Železara Smederevo",name_en:"Smederevo steel mill",place:"Smederevo",desc_sr:"Proizvodnja čelika oslobađa čestice, benzo(a)piren i teške metale.",desc_en:"Steel production releases particulates, benzo(a)pyrene and heavy metals."},
+  {name_sr:"Petrohemijski kompleks",name_en:"Petrochemical complex",place:"Pančevo",desc_sr:"Rafinerija nafte i petrohemija ispuštaju isparljiva organska jedinjenja i sumporne gasove.",desc_en:"The oil refinery and petrochemical plants release volatile organic compounds and sulfur gases."},
+  {name_sr:"Individualna ložišta",name_en:"Household heating",place:"širom Srbije",desc_sr:"Loženje uglja i drveta u domaćinstvima je glavni uzrok zimskog smoga u manjim gradovima.",desc_en:"Coal and wood burning in homes is the leading cause of winter smog in smaller towns."},
+];
+
+/* =================================================================
+   STORAGE — uses window.storage when previewing in Claude,
+   falls back to localStorage on a real deployed server.
+   NOTE: localStorage is per-browser only. For real shared/admin-wide
+   persistence in production, replace this with a real backend/database.
+================================================================= */
+async function storageGet(key, shared){
+  try{
+    if (window.storage) return await window.storage.get(key, !!shared);
+  }catch(e){ /* not found or unavailable */ }
+  try{
+    const v = localStorage.getItem(key);
+    return v ? {value:v} : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key, value, shared){
+  try{
+    if (window.storage){ await window.storage.set(key, value, !!shared); return; }
+  }catch(e){}
+  try{ localStorage.setItem(key, value); }catch(e){}
+}
+
+/* =================================================================
+   STATE
+================================================================= */
+const state = {
+  lang:"sr-latn", view:"home", stationId:"ns-liman",
+  isAdmin:false, loginError:"",
+  articles: SEED_ARTICLES.slice(),
+  expandedArticle:null, expandedTerm:null,
+  newsletterDone:false,
+  liveMode:false, loadingLive:true, liveError:null,
+};
+
+function t(){ return T[state.lang]; }
+function currentStation(){ return STATIONS.find(s=>s.id===state.stationId) || STATIONS[0]; }
+
+/* =================================================================
+   ACTIONS
+================================================================= */
+function setLang(l){ state.lang=l; render(); }
+function setView(v){ state.view=v; state.loginError=""; render(); window.scrollTo(0,0); }
+function setStationId(id){ state.stationId=id; render(); }
+function setCityFirstStation(city){
+  const first = STATIONS.find(s=>(s.city||t().city_unknown)===city);
+  if (first) state.stationId = first.id;
+  render();
+}
+function toggleArticle(id){ state.expandedArticle = state.expandedArticle===id ? null : id; render(); }
+function toggleTerm(key){ state.expandedTerm = state.expandedTerm===key ? null : key; render(); }
+
+function doLogin(e){
+  e.preventDefault();
+  const user = document.getElementById("login-user").value;
+  const pass = document.getElementById("login-pass").value;
+  if (user==="admin" && pass==="vazduh2026"){
+    state.isAdmin = true; state.loginError=""; setView("admin-panel");
+  } else {
+    state.loginError = t().login_error; render();
+  }
+}
+function doLogout(){ state.isAdmin=false; setView("home"); }
+
+async function persistArticles(){ await storageSet("az:articles", JSON.stringify(state.articles), true); }
+
+function publishArticle(e){
+  e.preventDefault();
+  const title = document.getElementById("new-title").value.trim();
+  const excerpt = document.getElementById("new-excerpt").value.trim();
+  const body = document.getElementById("new-body").value.trim();
+  if (!title) return;
+  const article = {
+    id:`a-${Date.now()}`, date:new Date().toISOString().slice(0,10),
+    title_sr:title, title_en:title, excerpt_sr:excerpt, excerpt_en:excerpt, body_sr:body, body_en:body,
+  };
+  state.articles = [article, ...state.articles];
+  persistArticles();
+  render();
+}
+function deleteArticle(id){
+  state.articles = state.articles.filter(a=>a.id!==id);
+  persistArticles();
+  render();
+}
+
+function subscribeNewsletter(e){
+  e.preventDefault();
+  const email = document.getElementById("newsletter-email").value.trim();
+  if (email) { state.newsletterDone = true; render(); }
+}
+
+/* =================================================================
+   RENDER — small template helpers
+================================================================= */
+function renderHeader(){
+  const T_=t();
+  const tabs = ["home","news","education","report"].map(v=>{
+    const label = v==="home"?T_.nav_home : v==="news"?T_.nav_news : v==="education"?T_.nav_edu : T_.nav_report;
+    return `<button class="${state.view===v?'active':''}" onclick="setView('${v}')">${label}</button>`;
+  }).join("");
+  const langs = ["sr-latn","sr-cyrl","en"].map(l=>{
+    const label = l==="sr-latn"?"SR":l==="sr-cyrl"?"СР":"EN";
+    return `<button class="${state.lang===l?'active':''}" onclick="setLang('${l}')">${label}</button>`;
+  }).join("");
+  return `
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <button class="brand" onclick="setView('home')">
+        ${icon('wind',22,'#3E7C8C')}
+        <span class="serif brand-name">${T_.title}</span>
+      </button>
+      <div class="navgroup">
+        <nav class="tabs">${tabs}</nav>
+        <div class="langbox">${icon('globe',14,'#5B6B70')}${langs}</div>
+        <button class="adminbtn" onclick="setView('${state.isAdmin ? "admin-panel" : "admin-login"}')">${icon('shield',14)} ${T_.nav_admin}</button>
+      </div>
+    </div>
+  </header>`;
+}
+
+function renderHome(){
+  const T_=t(); const cur = currentStation(); const level = levelFor(cur);
+  const cities = cityOrder();
+  const cityOptions = cities.map(c=>`<option value="${c}" ${c===(cur.city||T_.city_unknown)?'selected':''}>${c}</option>`).join("");
+  const stationOptions = STATIONS.filter(s=>(s.city||T_.city_unknown)===(cur.city||T_.city_unknown)).map(s=>`<option value="${s.id}" ${s.id===state.stationId?'selected':''}>${s.name}</option>`).join("");
+
+  const otherStations = cities.map(cityName=>{
+    const rows = STATIONS.filter(s=>(s.city||T_.city_unknown)===cityName && s.id!==state.stationId).map(s=>{
+      const l = levelFor(s);
+      const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
+      return `<button onclick="setStationId('${s.id}')"><span>${s.name}</span><span class="tabular" style="color:${l.color}">${badge}</span></button>`;
+    }).join("");
+    if (!rows) return "";
+    return `<div><div class="cityhead">${cityName}</div>${rows}</div>`;
+  }).join("");
+
+  const newsPreview = state.articles.slice(0,3).map(a=>articleRow(a,true)).join("");
+  const eduPreview = POLLUTANTS.slice(0,4).map(p=>`
+    <div class="pollutant-mini"><div class="n">${p.name}</div><div class="d">${state.lang==='en'?p.def_en:p.def_sr}</div></div>
+  `).join("");
+
+  // Live TraceTheToxin stations carry a SEPA category (text) instead of a
+  // numeric 0-500 AQI, so the headline shows that category directly and
+  // sizes down to fit; demo stations keep the big numeric score.
+  const headline = cur.sepaCategory ? sepaLabel(cur.sepaCategory) : cur.aqi;
+  const extraPollutants = (cur.so2!=null || cur.no2!=null || cur.o3!=null) ? `
+          ${cur.so2!=null?`<div><span class="tabular" style="font-weight:700">${cur.so2}</span> µg/m³ SO₂</div>`:""}
+          ${cur.no2!=null?`<div><span class="tabular" style="font-weight:700">${cur.no2}</span> µg/m³ NO₂</div>`:""}
+          ${cur.o3!=null?`<div><span class="tabular" style="font-weight:700">${cur.o3}</span> µg/m³ O₃</div>`:""}` : "";
+
+  return `
+  <div class="dash">
+    <div class="wrap dash-inner">
+      <div>
+        <div class="dash-selects">
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${icon('pin',15,'#3E7C8C')}
+            <select onchange="setCityFirstStation(this.value)">${cityOptions}</select>
+          </div>
+          <select class="station" onchange="setStationId(this.value)">${stationOptions}</select>
+        </div>
+        <div class="tabular aqi-num" style="color:${level.color};font-size:${cur.sepaCategory?'40px':'84px'};">${headline}</div>
+        <div class="aqi-cat" style="color:${level.color}">${cur.sepaCategory ? (cur.recordedAt ? `${T_.last_updated} ${formatStationTime(cur.recordedAt)}` : T_.aqi) : `${T_["cat_"+level.key]} · ${T_.aqi}`}</div>
+        <p class="advisory">${T_["advisory_"+level.key]}</p>
+        <div class="pollutant-row">
+          <div><span class="tabular" style="font-weight:700">${cur.pm25 ?? "–"}</span> µg/m³ ${T_.pm25}</div>
+          <div><span class="tabular" style="font-weight:700">${cur.pm10 ?? "–"}</span> µg/m³ ${T_.pm10}</div>
+          ${extraPollutants}
+        </div>
+        <div class="live-badge">${icon('radio',12)} ${state.loadingLive ? "…" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
+        ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:10px;color:#C1483B;margin-top:4px;max-width:380px;">${T_.live_error_prefix} ${state.liveError}</div>` : ""}
+      </div>
+      <div class="other-stations">
+        <div class="oh">${T_.other_stations}</div>
+        ${otherStations}
+      </div>
+    </div>
+  </div>
+  <div class="wrap grid2">
+    <div>
+      <button class="sectionhead" onclick="setView('news')">${icon('newspaper',16,'#3E7C8C')}<span class="txt serif">${T_.news_title}</span></button>
+      ${newsPreview}
+    </div>
+    <div>
+      <button class="sectionhead" onclick="setView('education')">${icon('book',16,'#3E7C8C')}<span class="txt serif">${T_.edu_title}</span></button>
+      ${eduPreview}
+      ${newsletterBox()}
+    </div>
+  </div>`;
+}
+
+function articleRow(a, compact){
+  const T_=t(); const field = state.lang==="en"?"en":"sr";
+  const expanded = state.expandedArticle===a.id;
+  return `
+  <div class="article-row">
+    <div class="article-date">${a.date}</div>
+    <div class="serif article-title ${compact?'compact':'full'}">${a["title_"+field]}</div>
+    <div class="article-excerpt">${a["excerpt_"+field]}</div>
+    ${compact ? "" : `
+      <button class="readmore" onclick="toggleArticle('${a.id}')">${expanded ? T_.collapse : T_.read_more}</button>
+      ${expanded ? `<p class="article-body">${a["body_"+field]}</p>` : ""}
+    `}
+  </div>`;
+}
+
+function newsletterBox(){
+  const T_=t();
+  if (state.newsletterDone){
+    return `<div class="newsletter-box"><div class="t">${T_.newsletter_title}</div><div style="font-size:13px;color:#3E7C8C">${T_.newsletter_ok}</div></div>`;
+  }
+  return `
+  <div class="newsletter-box">
+    <div class="t">${T_.newsletter_title}</div>
+    <form onsubmit="subscribeNewsletter(event)" style="display:flex;gap:8px;">
+      <input id="newsletter-email" class="field" type="email" placeholder="${T_.newsletter_ph}" required>
+      <button type="submit" class="btn btn-accent">${T_.newsletter_btn}</button>
+    </form>
+  </div>`;
+}
+
+function renderNews(){
+  const T_=t();
+  const list = state.articles.length ? state.articles.map(a=>articleRow(a,false)).join("") : `<p style="color:#5B6B70">${T_.no_news}</p>`;
+  return `<div class="wrap-narrow" style="padding-top:40px;padding-bottom:70px;">
+    <h1 class="serif" style="font-size:32px;margin-bottom:24px;">${T_.news_title}</h1>
+    ${list}
+  </div>`;
+}
+
+function renderEducation(){
+  const T_=t();
+  const glossary = POLLUTANTS.map(p=>{
+    const open = state.expandedTerm===p.key;
+    return `
+    <div class="glossary-item">
+      <button class="glossary-head" onclick="toggleTerm('${p.key}')">
+        <span class="n serif">${p.name}</span>
+        <span class="chev ${open?'open':''}">${icon('chevron',18,'#3E7C8C')}</span>
+      </button>
+      ${open ? `<div class="glossary-body">
+        <p style="margin:0 0 8px;">${state.lang==='en'?p.def_en:p.def_sr}</p>
+        <p style="margin:0 0 8px;color:#5B6B70;"><strong>${state.lang==='en'?'Main sources: ':'Glavni izvori: '}</strong>${state.lang==='en'?p.src_en:p.src_sr}</p>
+        <p style="margin:0;color:#5B6B70;"><strong>${state.lang==='en'?'Smell: ':'Miris: '}</strong>${state.lang==='en'?p.smell_en:p.smell_sr}</p>
+      </div>` : ""}
+    </div>`;
+  }).join("");
+
+  const industrial = INDUSTRIAL_SOURCES.map(s=>`
+    <div class="industrial-item">
+      <div class="row"><div class="name">${state.lang==='en'?s.name_en:s.name_sr}</div><div class="place">${s.place}</div></div>
+      <div class="desc">${state.lang==='en'?s.desc_en:s.desc_sr}</div>
+    </div>`).join("");
+
+  const smells = SMELLS.map(s=>`
+    <div class="industrial-item">
+      <div class="row"><div class="name">${T_.smell_if} ${state.lang==='en'?s.name_en:s.name_sr}</div></div>
+      <div class="desc">${state.lang==='en'?s.desc_en:s.desc_sr}</div>
+    </div>`).join("");
+
+  return `<div class="wrap-narrow" style="padding-top:40px;padding-bottom:70px;">
+    <h1 class="serif" style="font-size:32px;margin-bottom:8px;">${T_.edu_title}</h1>
+    <p style="color:#5B6B70;margin-bottom:28px;font-size:14px;">${state.lang==='en' ? "The main pollutants tracked in Serbian air quality reports." : "Glavni zagađivači koji se prate u izveštajima o kvalitetu vazduha."}</p>
+    ${glossary}
+    <h2 class="serif" style="font-size:24px;margin-top:44px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">${icon('factory',19,'#3E7C8C')} ${T_.industrial_title}</h2>
+    <p style="color:#5B6B70;margin-bottom:20px;font-size:14px;">${T_.industrial_intro}</p>
+    ${industrial}
+    <h2 class="serif" style="font-size:24px;margin-top:44px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">${icon('wind',19,'#3E7C8C')} ${T_.edu_smell_title}</h2>
+    <p style="color:#5B6B70;margin-bottom:20px;font-size:14px;">${T_.edu_smell_intro}</p>
+    ${smells}
+  </div>`;
+}
+
+function renderReport(){
+  const T_=t();
+  return `<div class="wrap-report" style="padding-top:40px;padding-bottom:70px;">
+    <h1 class="serif" style="font-size:30px;margin-bottom:10px;display:flex;align-items:center;gap:10px;">${icon('flag',24,'#3E7C8C')} ${T_.report_title}</h1>
+    <p style="color:#33454B;font-size:14.5px;line-height:1.6;margin-bottom:26px;">${T_.report_intro}</p>
+    <div class="report-card" style="margin-bottom:0;">
+      <div class="t">${T_.report_external_title}</div>
+      <div class="d">${T_.report_external_desc}</div>
+      <a href="https://toxin.tracethestuff.com/" target="_blank" rel="noopener noreferrer" class="btn btn-accent" style="text-decoration:none;">${icon('external',14)} ${T_.report_external_btn}</a>
+    </div>
+  </div>`;
+}
+
+function renderAdminLogin(){
+  const T_=t();
+  return `<div style="max-width:380px;margin:0 auto;padding:70px 20px;">
+    <h1 class="serif" style="font-size:26px;margin-bottom:20px;">${T_.admin_login_title}</h1>
+    <form onsubmit="doLogin(event)" class="form-col">
+      <label class="label">${T_.username}<input id="login-user" type="text"></label>
+      <label class="label">${T_.password}<input id="login-pass" type="password"></label>
+      ${state.loginError ? `<div class="error-text">${state.loginError}</div>` : ""}
+      <button type="submit" class="btn btn-ink" style="margin-top:8px;">${icon('login',14)} ${T_.login_btn}</button>
+      <div style="font-size:12px;color:#8B968B;margin-top:4px;">${T_.login_hint}</div>
+    </form>
+  </div>`;
+}
+
+function renderAdminPanel(){
+  const T_=t();
+  if (!state.isAdmin){
+    return `<div class="admin-empty"><p>${T_.admin_login_title}</p><button class="btn btn-ink" style="margin:16px auto 0;" onclick="setView('admin-login')">${T_.login}</button></div>`;
+  }
+  const dataRows = STATIONS.map(s=>{
+    const l = levelFor(s);
+    const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
+    return `<tr><td>${s.city ? s.city+" — " : ""}${s.name}</td><td class="tabular" style="color:${l.color};font-weight:700;">${badge}</td><td class="tabular">${s.pm25 ?? "–"}</td><td class="tabular">${s.pm10 ?? "–"}</td></tr>`;
+  }).join("");
+  const field = state.lang==="en"?"en":"sr";
+  const newsRows = state.articles.length ? state.articles.map(a=>`
+    <div class="manage-row"><div><div class="tt">${a["title_"+field]}</div><div class="dd">${a.date}</div></div>
+    <button class="del-btn" onclick="deleteArticle('${a.id}')">${icon('trash',16)}</button></div>`).join("")
+    : `<p style="color:#5B6B70;font-size:13px;">${T_.no_articles_yet}</p>`;
+
+  return `<div class="wrap-admin" style="padding-top:40px;padding-bottom:80px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
+      <h1 class="serif" style="font-size:28px;">${T_.admin_panel}</h1>
+      <button class="btn btn-outline" onclick="doLogout()">${icon('logout',14)} ${T_.logout}</button>
+    </div>
+    <div class="admin-grid">
+      <div>
+        <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon('plus',15,'#3E7C8C')} ${T_.add_article}</h2>
+        <form onsubmit="publishArticle(event)" class="form-col">
+          <input id="new-title" class="field" placeholder="${T_.article_title}">
+          <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}">
+          <textarea id="new-body" class="field" rows="5" placeholder="${T_.article_body}"></textarea>
+          <button type="submit" class="btn btn-accent" style="align-self:flex-start;">${T_.publish}</button>
+        </form>
+      </div>
+      <div>
+        <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;">${T_.data_overview}</h2>
+        <div style="max-height:260px;overflow-y:auto;">
+          <table class="data"><thead><tr><th>${T_.station}</th><th>${T_.aqi}</th><th>${T_.pm25}</th><th>${T_.pm10}</th></tr></thead><tbody>${dataRows}</tbody></table>
+        </div>
+        <div style="font-size:12px;color:#8B968B;margin-top:10px;">${state.loadingLive ? "…" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
+        ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:#C1483B;margin-top:4px;">${T_.live_error_prefix} ${state.liveError}</div>` : ""}
+      </div>
+    </div>
+    <div style="margin-top:44px;">
+      <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;">${T_.manage_news}</h2>
+      ${newsRows}
+    </div>
+  </div>`;
+}
+
+/* =================================================================
+   TRACETHETOXIN LIVE STATIONS
+   Same Supabase project TraceTheToxin itself reads from — its station
+   network (air_quality_stations + air_quality_latest) is the real data
+   source, this app just displays it. Falls back to DEMO_STATIONS if the
+   fetch fails for any reason (offline, table renamed, etc.).
+================================================================= */
+const TTT_SUPABASE_URL = "https://fnkqmwweljsupbmerbkh.supabase.co";
+const TTT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZua3Ftd3dlbGpzdXBibWVyYmtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3OTcwODUsImV4cCI6MjA5NzM3MzA4NX0.eX3mxnSpGmJ6Ebw7Y4F_jHiJarPH4ri9WNYXwmLi16I";
+let tttClient = null;
+function getTttClient(){
+  if (!tttClient && window.supabase) tttClient = window.supabase.createClient(TTT_SUPABASE_URL, TTT_SUPABASE_KEY);
+  return tttClient;
+}
+
+// The stations table has no "city" column — only lat/lon — so city
+// grouping is derived client-side via OSM's free Nominatim reverse
+// geocoder, paced ~1.1s apart per its usage policy. Runs in the
+// background after first render; each resolved city triggers a re-render
+// so the "other stations" list fills in progressively rather than
+// blocking the live data from showing up immediately.
+const cityGeocodeCache = new Map();
+async function resolveStationCity(station){
+  const key = `${Number(station.lat).toFixed(2)},${Number(station.lon).toFixed(2)}`;
+  if (cityGeocodeCache.has(key)) return cityGeocodeCache.get(key);
+  try{
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${station.lat}&lon=${station.lon}&zoom=10&addressdetails=1`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const addr = data.address || {};
+    const city = addr.city || addr.town || addr.municipality || addr.county || "";
+    cityGeocodeCache.set(key, city);
+    return city;
+  }catch(e){
+    cityGeocodeCache.set(key, "");
+    return "";
+  }
+}
+async function resolveAllStationCities(stations){
+  for (const s of stations){
+    const wasCached = cityGeocodeCache.has(`${Number(s.lat).toFixed(2)},${Number(s.lon).toFixed(2)}`);
+    s.city = await resolveStationCity(s) || null;
+    if (state.view==="home") render();
+    if (!wasCached) await new Promise(r=>setTimeout(r, 1100));
+  }
+}
+
+async function loadLiveStations(){
+  const client = getTttClient();
+  if (!client) throw new Error("Supabase client unavailable");
+  const [{ data: stations, error: stErr }, { data: latest, error: rdErr }] = await Promise.all([
+    client.from("air_quality_stations").select("*"),
+    client.from("air_quality_latest").select("*"),
+  ]);
+  if (stErr) throw stErr;
+  if (rdErr) console.error("TraceTheToxin latest-reading load error:", rdErr);
+  if (!stations || !stations.length) throw new Error("No stations returned");
+
+  const readingByStation = {};
+  (latest || []).forEach(r=>{ readingByStation[r.station_id] = r; });
+
+  const live = stations.map(s=>{
+    const r = readingByStation[s.id] || null;
+    return {
+      id: s.id, name: s.name, city: null, lat: s.lat, lon: s.lon,
+      sepaCategory: r ? r.category : null,
+      pm25: r ? r.pm25 : null, pm10: r ? r.pm10 : null,
+      so2: r ? r.so2 : null, no2: r ? r.no2 : null, o3: r ? r.o3 : null,
+      recordedAt: r ? r.recorded_at : null,
+    };
+  });
+  return live;
+}
+
+/* =================================================================
+   MASTER RENDER
+================================================================= */
+function render(){
+  const T_=t();
+  let body = "";
+  if (state.view==="home") body = renderHome();
+  else if (state.view==="news") body = renderNews();
+  else if (state.view==="education") body = renderEducation();
+  else if (state.view==="report") body = renderReport();
+  else if (state.view==="admin-login") body = renderAdminLogin();
+  else if (state.view==="admin-panel") body = renderAdminPanel();
+
+  document.getElementById("app").innerHTML = `
+    ${renderHeader()}
+    ${body}
+    <footer class="foot">${T_.footer_note}</footer>
+  `;
+}
+
+/* =================================================================
+   INIT — load persisted data, then attempt a live AQI source
+================================================================= */
+(async function init(){
+  try{
+    const res = await storageGet("az:articles", true);
+    if (res && res.value){
+      const parsed = JSON.parse(res.value);
+      if (Array.isArray(parsed) && parsed.length) state.articles = parsed;
+    }
+  }catch(e){}
+  render();
+
+  // Live station attempt — reads TraceTheToxin's own Supabase tables;
+  // falls back to the baked-in demo dataset on any failure.
+  try{
+    const live = await loadLiveStations();
+    STATIONS = live;
+    state.stationId = live[0].id;
+    state.liveMode = true;
+    resolveAllStationCities(live); // fire-and-forget, re-renders as cities resolve
+  }catch(e){
+    console.error("Live station load failed, using demo data:", e);
+    state.liveError = (e && (e.message || e.error_description || e.hint || JSON.stringify(e))) || String(e);
+    STATIONS = DEMO_STATIONS;
+    state.liveMode = false;
+  }finally{
+    state.loadingLive = false;
+    render();
+  }
+})();
+</script>
+</body>
+</html>
