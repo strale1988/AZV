@@ -34,8 +34,9 @@
   @keyframes spin{to{transform:rotate(360deg);}}
   header.topbar{border-bottom:1px solid var(--line);}
   .topbar-inner{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-  .brand{display:flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;padding:0;}
-  .brand-name{font-size:20px;font-weight:700;color:var(--ink);}
+  .brand{display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;padding:0;}
+  .brand-logo{display:block;width:36px;height:36px;}
+  .brand-name{font-size:26px;font-weight:700;color:var(--ink);}
   .navgroup{display:flex;align-items:center;gap:16px;font-size:14px;flex-wrap:wrap;}
   nav.tabs{display:flex;gap:14px;}
   nav.tabs button{background:none;border:none;cursor:pointer;padding:4px 0;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;}
@@ -121,7 +122,8 @@
 
   /* Mobile: bigger tap targets, tighter spacing */
   @media(max-width:480px){
-    .brand-name{font-size:17px;}
+    .brand-name{font-size:24px;}
+    .brand-logo{width:34px;height:34px;}
     .topbar-inner{padding:12px 16px;}
     .wrap,.wrap-narrow,.wrap-report,.wrap-admin{padding:0 16px;}
     nav.tabs{gap:10px;}
@@ -184,7 +186,7 @@ const T = {
     industrial_title:"Industrijski izvori zagađenja",
     industrial_intro:"Pored saobraćaja i grejanja, veći deo zagađenja u Srbiji potiče od industrijskih postrojenja.",
     newsletter_title:"Prijavite se na obaveštenja", newsletter_ph:"vasa@email.com", newsletter_btn:"Prijavi se", newsletter_ok:"Hvala! Proverite email za potvrdu.",
-    admin_login_title:"Prijava za administratore", email:"Aktivistički identitet", password:"Lozinka", login_btn:"Pošalji bezbedni kod",
+    admin_login_title:"Prijava za administratore", email:"Nalog", password:"Lozinka", login_btn:"Pošalji bezbedni kod",
     login_error:"Greška pri prijavi.", login_hint:"",
     otp_sent_to:"Kod poslat na", otp_placeholder:"Unesite kod", verify_btn:"Potvrdi i prijavi se",
     change_email:"← Promeni alias", resend_code:"Pošalji kod ponovo", domain_note:"Samo @alarmzavazduh.rs nalozi",
@@ -218,7 +220,7 @@ const T = {
     industrial_title:"Индустријски извори загађења",
     industrial_intro:"Поред саобраћаја и грејања, већи део загађења у Србији потиче од индустријских постројења.",
     newsletter_title:"Пријавите се на обавештења", newsletter_ph:"vasa@email.com", newsletter_btn:"Пријави се", newsletter_ok:"Хвала! Проверите имејл за потврду.",
-    admin_login_title:"Пријава за администраторе", email:"Активистички идентитет", password:"Лозинка", login_btn:"Пошаљи безбедни код",
+    admin_login_title:"Пријава за администраторе", email:"Налог", password:"Лозинка", login_btn:"Пошаљи безбедни код",
     login_error:"Грешка при пријави.", login_hint:"",
     otp_sent_to:"Код послат на", otp_placeholder:"Унесите код", verify_btn:"Потврди и пријави се",
     change_email:"← Промени алиас", resend_code:"Пошаљи код поново", domain_note:"Само @alarmzavazduh.rs налози",
@@ -628,7 +630,7 @@ function renderHeader(){
   <header class="topbar">
     <div class="wrap topbar-inner">
       <button class="brand" onclick="setView('home')">
-        <img src="icons/favicon.png" alt="" width="26" height="26" style="display:block;">
+        <img src="icons/favicon.png" alt="" class="brand-logo">
         <span class="serif brand-name">${T_.title}</span>
       </button>
       <div class="navgroup">
