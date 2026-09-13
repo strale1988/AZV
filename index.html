@@ -176,7 +176,8 @@ const T = {
     report_external_desc:"Zajednička mreža za prijavu zagađenja vazduha — mapa uživo, kategorije (dim, sumpor, hemikalije...) i praćenje izvora po pravcu vetra. Otvara se u novoj kartici.",
     report_external_btn:"Otvori TraceTheToxin",
     edu_smell_title:"Vodič po mirisu", edu_smell_intro:"Neprijatan miris je često prvi znak zagađenja. Evo šta pojedini mirisi obično znače.",
-    smell_if:"Ako osetite:",
+    smell_if:"Ako osetite:", main_sources:"Glavni izvori:", smell_label:"Miris:",
+    edu_intro:"Glavni zagađivači koji se prate u izveštajima o kvalitetu vazduha.",
   },
   "sr-cyrl": {
     title:"Аларм за ваздух", nav_home:"Преглед", nav_news:"Вести", nav_edu:"Едукација", nav_report:"Пријава", nav_admin:"Администрација",
@@ -206,39 +207,46 @@ const T = {
     report_external_desc:"Заједничка мрежа за пријаву загађења ваздуха — мапа уживо, категорије (дим, сумпор, хемикалије...) и праћење извора по правцу ветра. Отвара се у новој картици.",
     report_external_btn:"Отвори TraceTheToxin",
     edu_smell_title:"Водич по мирису", edu_smell_intro:"Непријатан мирис је често први знак загађења. Ево шта поједини мириси обично значе.",
-    smell_if:"Ако осетите:",
-  },
-  en: {
-    title:"Air Alarm", nav_home:"Overview", nav_news:"News", nav_edu:"Education", nav_report:"Report", nav_admin:"Admin",
-    login:"Log in", logout:"Log out", aqi:"AQI", pm25:"PM2.5", pm10:"PM10", other_stations:"Other stations",
-    advisory_good:"Air is clean. No restrictions on outdoor activity.",
-    advisory_moderate:"Acceptable air quality. Sensitive groups should watch for symptoms.",
-    advisory_usg:"Sensitive groups (children, elderly, asthmatics) should limit prolonged outdoor exertion.",
-    advisory_unhealthy:"Everyone should limit prolonged outdoor exertion.",
-    advisory_vunhealthy:"Avoid outdoor physical activity. Stay indoors where possible.",
-    advisory_hazardous:"Health risk for the entire population. Stay indoors, ventilate briefly.",
-    cat_good:"Good", cat_moderate:"Moderate", cat_usg:"Unhealthy for sensitive groups", cat_unhealthy:"Unhealthy", cat_vunhealthy:"Very unhealthy", cat_hazardous:"Hazardous",
-    demo_badge:"Demo data — connect an API key for live readings", live_badge:"Live data",
-    last_updated:"Updated:", city_unknown:"Other stations", live_error_prefix:"Live data load error:",
-    news_title:"Air quality news", read_more:"Read more", collapse:"Collapse", no_news:"No articles published yet.",
-    edu_title:"Guide to pollutants",
-    industrial_title:"Industrial pollution sources",
-    industrial_intro:"Beyond traffic and heating, much of Serbia's pollution comes from industrial facilities.",
-    newsletter_title:"Get alerts by email", newsletter_ph:"you@email.com", newsletter_btn:"Subscribe", newsletter_ok:"Thanks! Check your inbox to confirm.",
-    admin_login_title:"Admin sign in", username:"Username", password:"Password", login_btn:"Sign in",
-    login_error:"Incorrect username or password.", login_hint:"Demo account: admin / vazduh2026",
-    admin_panel:"Admin dashboard", add_article:"New article", article_title:"Title", article_excerpt:"Short summary", article_body:"Body text", publish:"Publish",
-    manage_news:"Manage news", data_overview:"Data overview", no_articles_yet:"No articles published yet.", station:"Station",
-    footer_note:"Air quality data is provided for informational purposes only.",
-    report_title:"Report air pollution",
-    report_intro:"Noticed smoke, a strong smell, or haze that isn't ordinary fog? Report it — every submission helps identify polluters.",
-    report_external_title:"Report via TraceTheToxin",
-    report_external_desc:"A community air-reporting network with a live map, categorized reports (smoke, sulfur, chemicals...), and wind-trail source tracing. Opens in a new tab.",
-    report_external_btn:"Open TraceTheToxin",
-    edu_smell_title:"Guide by smell", edu_smell_intro:"An unusual smell is often the first sign of pollution. Here's what common smells usually mean.",
-    smell_if:"If you notice:",
+    smell_if:"Ако осетите:", main_sources:"Главни извори:", smell_label:"Мирис:",
+    edu_intro:"Главни загађивачи који се прате у извештајима о квалитету ваздуха.",
   },
 };
+
+/* =================================================================
+   LATIN → CYRILLIC TRANSLITERATION
+   Content (articles, pollutant descriptions, smell guide, industrial
+   sources) is authored once, in Serbian Latin, as the single source of
+   truth. When the UI is in Cyrillic mode, srDisplay() transliterates it
+   on the fly — Serbian Latin-to-Cyrillic is a mechanical, 1:1 mapping,
+   so this keeps both scripts genuinely in sync instead of relying on a
+   second hand-maintained copy of every string. Tokens that contain a
+   digit (PM10, PM2.5, SO₂...) are left untouched, since chemical
+   notation and units conventionally stay in Latin form even inside
+   Cyrillic text.
+================================================================= */
+const LAT2CYR_2 = { "lj":"љ","Lj":"Љ","LJ":"Љ", "nj":"њ","Nj":"Њ","NJ":"Њ", "dž":"џ","Dž":"Џ","DŽ":"Џ" };
+const LAT2CYR_1 = {
+  a:"а",A:"А", b:"б",B:"Б", v:"в",V:"В", g:"г",G:"Г", d:"д",D:"Д", đ:"ђ",Đ:"Ђ",
+  e:"е",E:"Е", ž:"ж",Ž:"Ж", z:"з",Z:"З", i:"и",I:"И", j:"ј",J:"Ј", k:"к",K:"К",
+  l:"л",L:"Л", m:"м",M:"М", n:"н",N:"Н", o:"о",O:"О", p:"п",P:"П", r:"р",R:"Р",
+  s:"с",S:"С", t:"т",T:"Т", ć:"ћ",Ć:"Ћ", u:"у",U:"У", f:"ф",F:"Ф", h:"х",H:"Х",
+  c:"ц",C:"Ц", č:"ч",Č:"Ч", š:"ш",Š:"Ш",
+};
+function latToCyr(str){
+  if (!str) return str;
+  return str.split(/(\s+)/).map(token=>{
+    if (/[\d\u2080-\u2089]/.test(token)) return token; // keep formulas/units as-is
+    let out = "";
+    for (let i=0;i<token.length;i++){
+      const two = token.substr(i,2);
+      if (LAT2CYR_2[two]){ out += LAT2CYR_2[two]; i++; continue; }
+      const ch = token[i];
+      out += (LAT2CYR_1[ch] !== undefined) ? LAT2CYR_1[ch] : ch;
+    }
+    return out;
+  }).join("");
+}
+function srDisplay(str){ return state.lang==="sr-cyrl" ? latToCyr(str) : str; }
 
 /* =================================================================
    DATA
@@ -270,8 +278,7 @@ function sepaLabel(cat){ return (SEPA_LABELS[cat] && SEPA_LABELS[cat][state.lang
 function fmtNum(n){
   if (n==null || isNaN(n)) return "–";
   const rounded = Math.round(n*10)/10;
-  const str = rounded.toString();
-  return state.lang==="en" ? str : str.replace(".", ",");
+  return rounded.toString().replace(".", ",");
 }
 function levelForKey(key){ return AQI_LEVELS.find(l=>l.key===key) || AQI_LEVELS[0]; }
 // Demo stations use a numeric 0-500 style AQI; live TraceTheToxin stations
@@ -334,48 +341,44 @@ function cityOrder(){ return [...new Set(STATIONS.map(s=>s.city || t().city_unkn
 
 let SEED_ARTICLES = [
   {id:"seed-1",date:"2026-09-10",
-    title_sr:"Koncentracija čađi u porastu u Beogradu tokom jutarnjih sati", title_en:"Soot levels rising in Belgrade during morning hours",
+    title_sr:"Koncentracija čađi u porastu u Beogradu tokom jutarnjih sati",
     excerpt_sr:"Merne stanice beleže povećanje PM10 čestica između 7 i 9 časova ujutru, usled saobraćaja i grejne sezone.",
-    excerpt_en:"Monitoring stations recorded a rise in PM10 particles between 7 and 9 a.m., linked to traffic and the start of the heating season.",
-    body_sr:"Prema podacima nekoliko mernih stanica u Beogradu, koncentracija PM10 čestica beleži rast tokom jutarnjeg špica. Stručnjaci navode kombinaciju saobraćajnih gasova, individualnih ložišta i vremenskih uslova bez vetra kao glavne uzroke.",
-    body_en:"Data from several Belgrade monitoring stations shows a rise in PM10 concentrations during the morning rush. Experts point to a combination of traffic emissions, household heating, and windless conditions."},
+    body_sr:"Prema podacima nekoliko mernih stanica u Beogradu, koncentracija PM10 čestica beleži rast tokom jutarnjeg špica. Stručnjaci navode kombinaciju saobraćajnih gasova, individualnih ložišta i vremenskih uslova bez vetra kao glavne uzroke."},
   {id:"seed-2",date:"2026-09-05",
-    title_sr:"Novi Sad uvodi dodatnu mernu stanicu u naselju Liman", title_en:"Novi Sad adds new monitoring station in Liman district",
+    title_sr:"Novi Sad uvodi dodatnu mernu stanicu u naselju Liman",
     excerpt_sr:"Gradska uprava najavljuje proširenje mreže senzora radi tačnijeg praćenja kvaliteta vazduha po naseljima.",
-    excerpt_en:"City authorities announce a sensor network expansion for more accurate neighborhood-level air quality tracking.",
-    body_sr:"Grad Novi Sad pokrenuo je proces postavljanja nove merne stanice u naselju Liman, sa ciljem preciznijeg praćenja lokalnih vrednosti PM2.5 i PM10 čestica.",
-    body_en:"The city of Novi Sad has begun installing a new monitoring station in the Liman neighborhood, aiming for more precise local tracking of PM2.5 and PM10 levels."},
+    body_sr:"Grad Novi Sad pokrenuo je proces postavljanja nove merne stanice u naselju Liman, sa ciljem preciznijeg praćenja lokalnih vrednosti PM2.5 i PM10 čestica."},
 ];
 
 const POLLUTANTS = [
-  {key:"pm25",name:"PM2.5",def_sr:"Sitne čestice prečnika manjeg od 2,5 mikrometra koje prodiru duboko u pluća i krvotok.",def_en:"Fine particles under 2.5 micrometers that penetrate deep into the lungs and bloodstream.",src_sr:"Sagorevanje (saobraćaj, grejanje, industrija), šumski požari.",src_en:"Combustion (traffic, heating, industry), wildfires.",smell_sr:"Sam po sebi bez mirisa, ali prati ga miris dima ili sagorevanja iz izvora.",smell_en:"Odorless on its own, but usually accompanied by the smoky smell of the combustion source."},
-  {key:"pm10",name:"PM10",def_sr:"Grublje čestice prašine, polena i čađi prečnika do 10 mikrometara.",def_en:"Coarser dust, pollen and soot particles up to 10 micrometers.",src_sr:"Građevinski radovi, putna prašina, poljoprivreda.",src_en:"Construction, road dust, agriculture.",smell_sr:"Bez mirisa; ponekad se oseti kao prašnjav ili zemljan zadah.",smell_en:"Odorless; sometimes noticeable as a dusty or earthy feel in the air."},
-  {key:"o3",name:"O₃ (prizemni ozon)",def_sr:"Nastaje fotohemijskim reakcijama zagađivača na suncu, iritira disajne puteve.",def_en:"Formed by sunlight-driven reactions of pollutants; irritates airways.",src_sr:"Sekundarni zagađivač — nastaje iz izduvnih gasova i sunčeve svetlosti.",src_en:"Secondary pollutant formed from vehicle exhaust and sunlight.",smell_sr:"Oštar, „metalni” miris — sličan mirisu posle grmljavine ili blizu fotokopir aparata.",smell_en:"A sharp, metallic smell — similar to the air after a thunderstorm or near a photocopier."},
-  {key:"no2",name:"NO₂",def_sr:"Gas koji nadražuje pluća i pogoršava astmu, uglavnom iz saobraćaja.",def_en:"A gas that irritates the lungs and worsens asthma, mostly from traffic.",src_sr:"Motori sa unutrašnjim sagorevanjem, termoelektrane.",src_en:"Internal combustion engines, power plants.",smell_sr:"Oštar, zagušljiv miris nalik izduvnim gasovima.",smell_en:"A sharp, acrid smell similar to vehicle exhaust."},
-  {key:"so2",name:"SO₂",def_sr:"Nastaje sagorevanjem uglja i nafte sa sumporom, uzrokuje kiselu kišu.",def_en:"Produced by burning sulfur-containing coal and oil; causes acid rain.",src_sr:"Termoelektrane na ugalj, topionice, industrija.",src_en:"Coal power plants, smelters, heavy industry.",smell_sr:"Oštar miris na upaljenu šibicu ili sumpor.",smell_en:"A sharp smell like a struck match or sulfur."},
-  {key:"co",name:"CO",def_sr:"Bezbojan i bez mirisa, smanjuje sposobnost krvi da prenosi kiseonik.",def_en:"Colorless and odorless; reduces the blood's ability to carry oxygen.",src_sr:"Nepotpuno sagorevanje goriva.",src_en:"Incomplete combustion of fuel.",smell_sr:"Potpuno bez mirisa — zato je opasan, ne može se osetiti na vreme.",smell_en:"Completely odorless — which is what makes it dangerous, since it can't be smelled in time."},
-  {key:"heavy",name:"Teški metali (As, Pb, Cd)",def_sr:"Arsen, olovo i kadmijum vezani za čestice, akumuliraju se u telu tokom vremena.",def_en:"Arsenic, lead and cadmium bound to particles; accumulate in the body over time.",src_sr:"Topljenje metalnih ruda, sagorevanje uglja.",src_en:"Metal ore smelting, coal combustion.",smell_sr:"Bez sopstvenog mirisa; obično prate metalni ili sumporni zadah iz topionice.",smell_en:"No smell of their own; usually carried alongside the metallic or sulfurous smell from a smelter."},
+  {key:"pm25",name:"PM2.5",def_sr:"Sitne čestice prečnika manjeg od 2,5 mikrometra koje prodiru duboko u pluća i krvotok.",src_sr:"Sagorevanje (saobraćaj, grejanje, industrija), šumski požari.",smell_sr:"Sam po sebi bez mirisa, ali prati ga miris dima ili sagorevanja iz izvora."},
+  {key:"pm10",name:"PM10",def_sr:"Grublje čestice prašine, polena i čađi prečnika do 10 mikrometara.",src_sr:"Građevinski radovi, putna prašina, poljoprivreda.",smell_sr:"Bez mirisa; ponekad se oseti kao prašnjav ili zemljan zadah."},
+  {key:"o3",name:"O₃ (prizemni ozon)",def_sr:"Nastaje fotohemijskim reakcijama zagađivača na suncu, iritira disajne puteve.",src_sr:"Sekundarni zagađivač — nastaje iz izduvnih gasova i sunčeve svetlosti.",smell_sr:"Oštar, „metalni” miris — sličan mirisu posle grmljavine ili blizu fotokopir aparata."},
+  {key:"no2",name:"NO₂",def_sr:"Gas koji nadražuje pluća i pogoršava astmu, uglavnom iz saobraćaja.",src_sr:"Motori sa unutrašnjim sagorevanjem, termoelektrane.",smell_sr:"Oštar, zagušljiv miris nalik izduvnim gasovima."},
+  {key:"so2",name:"SO₂",def_sr:"Nastaje sagorevanjem uglja i nafte sa sumporom, uzrokuje kiselu kišu.",src_sr:"Termoelektrane na ugalj, topionice, industrija.",smell_sr:"Oštar miris na upaljenu šibicu ili sumpor."},
+  {key:"co",name:"CO",def_sr:"Bezbojan i bez mirisa, smanjuje sposobnost krvi da prenosi kiseonik.",src_sr:"Nepotpuno sagorevanje goriva.",smell_sr:"Potpuno bez mirisa — zato je opasan, ne može se osetiti na vreme."},
+  {key:"heavy",name:"Teški metali (As, Pb, Cd)",def_sr:"Arsen, olovo i kadmijum vezani za čestice, akumuliraju se u telu tokom vremena.",src_sr:"Topljenje metalnih ruda, sagorevanje uglja.",smell_sr:"Bez sopstvenog mirisa; obično prate metalni ili sumporni zadah iz topionice."},
 ];
 
 const SMELLS = [
-  {key:"smoke",name_sr:"Dim",name_en:"Smoke",desc_sr:"Dim od sagorevanja drveta, uglja ili otpada. Nosi visok nivo PM2.5 — najčešće individualna ložišta zimi ili šumski/otvoreni požari.",desc_en:"Smoke from burning wood, coal, or waste. Carries high PM2.5 — most often household heating in winter or wildfires/open burning."},
-  {key:"sewage",name_sr:"Kanalizacija",name_en:"Sewage",desc_sr:"Zadah na trulo/fekalije, obično iz kanalizacionog sistema ili postrojenja za preradu otpadnih voda.",desc_en:"A rotten, sewage-like odor, usually from the sewer system or a wastewater treatment plant."},
-  {key:"sulfur",name_sr:"Sumpor",name_en:"Sulfur",desc_sr:"Oštar miris na sumpor ili upaljenu šibicu — ukazuje na SO₂, često iz termoelektrana, topionica ili rafinerija.",desc_en:"A sharp sulfur or burnt-match smell — points to SO₂, often from power plants, smelters, or refineries."},
-  {key:"burnt_plastic",name_sr:"Zapaljena plastika",name_en:"Burnt plastic",desc_sr:"Oštar, zagušljiv hemijski miris — obično nelegalno spaljivanje otpada, oslobađa toksične gasove.",desc_en:"A sharp, acrid chemical smell — usually illegal waste burning, which releases toxic gases."},
-  {key:"chemicals",name_sr:"Hemikalije",name_en:"Chemicals",desc_sr:"Miris rastvarača, lepka, farbe ili drugi izraženi „hemijski” zadah — obično industrijska postrojenja ili petrohemija.",desc_en:"The smell of solvents, glue, paint, or another sharp chemical odor — usually industrial facilities or petrochemical plants."},
-  {key:"waste",name_sr:"Otpad",name_en:"Waste",desc_sr:"Zadah truljenja ili smeća — obično deponije ili nelegalno odlaganje otpada u blizini.",desc_en:"A rotting or garbage smell — usually a landfill or illegal waste dumping nearby."},
-  {key:"clean_air",name_sr:"Čist vazduh",name_en:"Clean air",desc_sr:"Nema primetnog mirisa — dobar znak, nema potrebe za prijavom.",desc_en:"No noticeable smell — a good sign, nothing to report."},
-  {key:"unknown",name_sr:"Nepoznato",name_en:"Unknown",desc_sr:"Neprijatan miris čiji izvor ne prepoznajete — i dalje vredi prijaviti, pomaže u praćenju obrazaca.",desc_en:"An unpleasant smell you can't identify the source of — still worth reporting, it helps track patterns."},
-  {key:"other",name_sr:"Drugo",name_en:"Other",desc_sr:"Bilo koji drugi neobičan miris koji ne spada u prethodne kategorije.",desc_en:"Any other unusual smell that doesn't fit the categories above."},
+  {key:"smoke",name_sr:"Dim",desc_sr:"Dim od sagorevanja drveta, uglja ili otpada. Nosi visok nivo PM2.5 — najčešće individualna ložišta zimi ili šumski/otvoreni požari."},
+  {key:"sewage",name_sr:"Kanalizacija",desc_sr:"Zadah na trulo/fekalije, obično iz kanalizacionog sistema ili postrojenja za preradu otpadnih voda."},
+  {key:"sulfur",name_sr:"Sumpor",desc_sr:"Oštar miris na sumpor ili upaljenu šibicu — ukazuje na SO₂, često iz termoelektrana, topionica ili rafinerija."},
+  {key:"burnt_plastic",name_sr:"Zapaljena plastika",desc_sr:"Oštar, zagušljiv hemijski miris — obično nelegalno spaljivanje otpada, oslobađa toksične gasove."},
+  {key:"chemicals",name_sr:"Hemikalije",desc_sr:"Miris rastvarača, lepka, farbe ili drugi izraženi „hemijski” zadah — obično industrijska postrojenja ili petrohemija."},
+  {key:"waste",name_sr:"Otpad",desc_sr:"Zadah truljenja ili smeća — obično deponije ili nelegalno odlaganje otpada u blizini."},
+  {key:"clean_air",name_sr:"Čist vazduh",desc_sr:"Nema primetnog mirisa — dobar znak, nema potrebe za prijavom."},
+  {key:"unknown",name_sr:"Nepoznato",desc_sr:"Neprijatan miris čiji izvor ne prepoznajete — i dalje vredi prijaviti, pomaže u praćenju obrazaca."},
+  {key:"other",name_sr:"Drugo",desc_sr:"Bilo koji drugi neobičan miris koji ne spada u prethodne kategorije."},
 ];
 
 const INDUSTRIAL_SOURCES = [
-  {name_sr:"Cementara Beočin",name_en:"Beočin cement plant",place:"Beočin",desc_sr:"Jedna od najvećih cementara u regionu; ispušta prašinu i sumpor-dioksid.",desc_en:"One of the region's largest cement plants; releases dust and sulfur dioxide."},
-  {name_sr:"Topionica bakra RTB Bor",name_en:"RTB Bor copper smelter",place:"Bor",desc_sr:"Topljenje bakarne rude oslobađa sumpor-dioksid i teške metale, uključujući arsen.",desc_en:"Copper ore smelting releases sulfur dioxide and heavy metals, including arsenic."},
-  {name_sr:"Termoelektrane TENT i Kostolac",name_en:"TENT & Kostolac power plants",place:"Obrenovac / Kostolac",desc_sr:"Termoelektrane na lignit su najveći pojedinačni izvor SO₂ i pepela u Srbiji.",desc_en:"Lignite-fired power plants are Serbia's single largest source of SO₂ and fly ash."},
-  {name_sr:"Železara Smederevo",name_en:"Smederevo steel mill",place:"Smederevo",desc_sr:"Proizvodnja čelika oslobađa čestice, benzo(a)piren i teške metale.",desc_en:"Steel production releases particulates, benzo(a)pyrene and heavy metals."},
-  {name_sr:"Petrohemijski kompleks",name_en:"Petrochemical complex",place:"Pančevo",desc_sr:"Rafinerija nafte i petrohemija ispuštaju isparljiva organska jedinjenja i sumporne gasove.",desc_en:"The oil refinery and petrochemical plants release volatile organic compounds and sulfur gases."},
-  {name_sr:"Individualna ložišta",name_en:"Household heating",place:"širom Srbije",desc_sr:"Loženje uglja i drveta u domaćinstvima je glavni uzrok zimskog smoga u manjim gradovima.",desc_en:"Coal and wood burning in homes is the leading cause of winter smog in smaller towns."},
+  {name_sr:"Cementara Beočin",place:"Beočin",desc_sr:"Jedna od najvećih cementara u regionu; ispušta prašinu i sumpor-dioksid."},
+  {name_sr:"Topionica bakra RTB Bor",place:"Bor",desc_sr:"Topljenje bakarne rude oslobađa sumpor-dioksid i teške metale, uključujući arsen."},
+  {name_sr:"Termoelektrane TENT i Kostolac",place:"Obrenovac / Kostolac",desc_sr:"Termoelektrane na lignit su najveći pojedinačni izvor SO₂ i pepela u Srbiji."},
+  {name_sr:"Železara Smederevo",place:"Smederevo",desc_sr:"Proizvodnja čelika oslobađa čestice, benzo(a)piren i teške metale."},
+  {name_sr:"Petrohemijski kompleks",place:"Pančevo",desc_sr:"Rafinerija nafte i petrohemija ispuštaju isparljiva organska jedinjenja i sumporne gasove."},
+  {name_sr:"Individualna ložišta",place:"širom Srbije",desc_sr:"Loženje uglja i drveta u domaćinstvima je glavni uzrok zimskog smoga u manjim gradovima."},
 ];
 
 /* =================================================================
@@ -451,7 +454,7 @@ function publishArticle(e){
   if (!title) return;
   const article = {
     id:`a-${Date.now()}`, date:new Date().toISOString().slice(0,10),
-    title_sr:title, title_en:title, excerpt_sr:excerpt, excerpt_en:excerpt, body_sr:body, body_en:body,
+    title_sr:title, excerpt_sr:excerpt, body_sr:body,
   };
   state.articles = [article, ...state.articles];
   persistArticles();
@@ -478,8 +481,8 @@ function renderHeader(){
     const label = v==="home"?T_.nav_home : v==="news"?T_.nav_news : v==="education"?T_.nav_edu : T_.nav_report;
     return `<button class="${state.view===v?'active':''}" onclick="setView('${v}')">${label}</button>`;
   }).join("");
-  const langs = ["sr-latn","sr-cyrl","en"].map(l=>{
-    const label = l==="sr-latn"?"SR":l==="sr-cyrl"?"СР":"EN";
+  const langs = ["sr-latn","sr-cyrl"].map(l=>{
+    const label = l==="sr-latn"?"SR":"СР";
     return `<button class="${state.lang===l?'active':''}" onclick="setLang('${l}')">${label}</button>`;
   }).join("");
   return `
@@ -516,7 +519,7 @@ function renderHome(){
 
   const newsPreview = state.articles.slice(0,3).map(a=>articleRow(a,true)).join("");
   const eduPreview = POLLUTANTS.slice(0,4).map(p=>`
-    <div class="pollutant-mini"><div class="n">${p.name}</div><div class="d">${state.lang==='en'?p.def_en:p.def_sr}</div></div>
+    <div class="pollutant-mini"><div class="n">${p.name}</div><div class="d">${srDisplay(p.def_sr)}</div></div>
   `).join("");
 
   // Live TraceTheToxin stations carry a SEPA category (text) instead of a
@@ -570,16 +573,16 @@ function renderHome(){
 }
 
 function articleRow(a, compact){
-  const T_=t(); const field = state.lang==="en"?"en":"sr";
+  const T_=t();
   const expanded = state.expandedArticle===a.id;
   return `
   <div class="article-row">
     <div class="article-date">${a.date}</div>
-    <div class="serif article-title ${compact?'compact':'full'}">${a["title_"+field]}</div>
-    <div class="article-excerpt">${a["excerpt_"+field]}</div>
+    <div class="serif article-title ${compact?'compact':'full'}">${srDisplay(a.title_sr)}</div>
+    <div class="article-excerpt">${srDisplay(a.excerpt_sr)}</div>
     ${compact ? "" : `
       <button class="readmore" onclick="toggleArticle('${a.id}')">${expanded ? T_.collapse : T_.read_more}</button>
-      ${expanded ? `<p class="article-body">${a["body_"+field]}</p>` : ""}
+      ${expanded ? `<p class="article-body">${srDisplay(a.body_sr)}</p>` : ""}
     `}
   </div>`;
 }
@@ -619,28 +622,28 @@ function renderEducation(){
         <span class="chev ${open?'open':''}">${icon('chevron',18,'#3E7C8C')}</span>
       </button>
       ${open ? `<div class="glossary-body">
-        <p style="margin:0 0 8px;">${state.lang==='en'?p.def_en:p.def_sr}</p>
-        <p style="margin:0 0 8px;color:#5B6B70;"><strong>${state.lang==='en'?'Main sources: ':'Glavni izvori: '}</strong>${state.lang==='en'?p.src_en:p.src_sr}</p>
-        <p style="margin:0;color:#5B6B70;"><strong>${state.lang==='en'?'Smell: ':'Miris: '}</strong>${state.lang==='en'?p.smell_en:p.smell_sr}</p>
+        <p style="margin:0 0 8px;">${srDisplay(p.def_sr)}</p>
+        <p style="margin:0 0 8px;color:#5B6B70;"><strong>${T_.main_sources} </strong>${srDisplay(p.src_sr)}</p>
+        <p style="margin:0;color:#5B6B70;"><strong>${T_.smell_label} </strong>${srDisplay(p.smell_sr)}</p>
       </div>` : ""}
     </div>`;
   }).join("");
 
   const industrial = INDUSTRIAL_SOURCES.map(s=>`
     <div class="industrial-item">
-      <div class="row"><div class="name">${state.lang==='en'?s.name_en:s.name_sr}</div><div class="place">${s.place}</div></div>
-      <div class="desc">${state.lang==='en'?s.desc_en:s.desc_sr}</div>
+      <div class="row"><div class="name">${srDisplay(s.name_sr)}</div><div class="place">${srDisplay(s.place)}</div></div>
+      <div class="desc">${srDisplay(s.desc_sr)}</div>
     </div>`).join("");
 
   const smells = SMELLS.map(s=>`
     <div class="industrial-item">
-      <div class="row"><div class="name">${T_.smell_if} ${state.lang==='en'?s.name_en:s.name_sr}</div></div>
-      <div class="desc">${state.lang==='en'?s.desc_en:s.desc_sr}</div>
+      <div class="row"><div class="name">${T_.smell_if} ${srDisplay(s.name_sr)}</div></div>
+      <div class="desc">${srDisplay(s.desc_sr)}</div>
     </div>`).join("");
 
   return `<div class="wrap-narrow" style="padding-top:40px;padding-bottom:70px;">
     <h1 class="serif" style="font-size:32px;margin-bottom:8px;">${T_.edu_title}</h1>
-    <p style="color:#5B6B70;margin-bottom:28px;font-size:14px;">${state.lang==='en' ? "The main pollutants tracked in Serbian air quality reports." : "Glavni zagađivači koji se prate u izveštajima o kvalitetu vazduha."}</p>
+    <p style="color:#5B6B70;margin-bottom:28px;font-size:14px;">${T_.edu_intro}</p>
     ${glossary}
     <h2 class="serif" style="font-size:24px;margin-top:44px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">${icon('factory',19,'#3E7C8C')} ${T_.industrial_title}</h2>
     <p style="color:#5B6B70;margin-bottom:20px;font-size:14px;">${T_.industrial_intro}</p>
@@ -688,9 +691,8 @@ function renderAdminPanel(){
     const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
     return `<tr><td>${s.city ? s.city+" — " : ""}${s.name}</td><td class="tabular" style="color:${l.color};font-weight:700;">${badge}</td><td class="tabular">${fmtNum(s.pm25)}</td><td class="tabular">${fmtNum(s.pm10)}</td></tr>`;
   }).join("");
-  const field = state.lang==="en"?"en":"sr";
   const newsRows = state.articles.length ? state.articles.map(a=>`
-    <div class="manage-row"><div><div class="tt">${a["title_"+field]}</div><div class="dd">${a.date}</div></div>
+    <div class="manage-row"><div><div class="tt">${srDisplay(a.title_sr)}</div><div class="dd">${a.date}</div></div>
     <button class="del-btn" onclick="deleteArticle('${a.id}')">${icon('trash',16)}</button></div>`).join("")
     : `<p style="color:#5B6B70;font-size:13px;">${T_.no_articles_yet}</p>`;
 
@@ -823,7 +825,8 @@ function render(){
   try{
     const live = await loadLiveStations();
     STATIONS = live;
-    state.stationId = live[0].id;
+    const noviSadStation = live.find(s=>s.city==="Novi Sad");
+    state.stationId = (noviSadStation || live[0]).id;
     state.liveMode = true;
   }catch(e){
     console.error("Live station load failed, using demo data:", e);
