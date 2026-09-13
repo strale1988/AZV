@@ -739,41 +739,22 @@ function getTttClient(){
   return tttClient;
 }
 
-// The stations table has no "city" column — only lat/lon — so city
-// grouping is derived client-side via OSM's free Nominatim reverse
-// geocoder, paced ~1.1s apart per its usage policy. Runs in the
-// background after first render; each resolved city triggers a re-render
-// so the "other stations" list fills in progressively rather than
-// blocking the live data from showing up immediately.
-const cityGeocodeCache = new Map();
-async function resolveStationCity(station){
-  const key = `${Number(station.lat).toFixed(2)},${Number(station.lon).toFixed(2)}`;
-  if (cityGeocodeCache.has(key)) return cityGeocodeCache.get(key);
-  try{
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${station.lat}&lon=${station.lon}&zoom=10&addressdetails=1`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const addr = data.address || {};
-    const city = addr.city || addr.town || addr.municipality || addr.county || "";
-    cityGeocodeCache.set(key, city);
-    return city;
-  }catch(e){
-    cityGeocodeCache.set(key, "");
-    return "";
-  }
-}
-// Resolves every station's city in the background, then re-renders ONCE
-// at the end. Re-rendering after each station (as before) rebuilds the
-// whole page's DOM every ~1.1s, which yanks focus away from any open
-// dropdown mid-selection. A single render when everything settles avoids
-// interrupting the user entirely.
-async function resolveAllStationCities(stations){
-  for (const s of stations){
-    const wasCached = cityGeocodeCache.has(`${Number(s.lat).toFixed(2)},${Number(s.lon).toFixed(2)}`);
-    s.city = await resolveStationCity(s) || null;
-    if (!wasCached) await new Promise(r=>setTimeout(r, 1100));
-  }
-  if (state.view==="home") render();
+// The stations table has no "city" column — only lat/lon — but every
+// TraceTheToxin station name is prefixed with its city ("Beograd Stari
+// grad", "Novi Sad Liman" ...), so city is derived instantly and
+// synchronously from the name instead of round-tripping to a reverse
+// geocoding service per station. That earlier approach was slow (~1s/
+// station, rate-limited), showed a placeholder "Other stations" bucket
+// in the city dropdown until it finished, and forced a re-render after
+// every station that could interrupt an open dropdown mid-selection.
+const KNOWN_CITIES = [
+  "Sremska Mitrovica","Novi Sad","Kragujevac","Zrenjanin","Kraljevo","Kostolac",
+  "Smederevo","Subotica","Valjevo","Leskovac","Loznica","Zaječar","Pančevo",
+  "Beograd","Beočin","Sombor","Vršac","Šabac","Čačak","Niš","Bor",
+].sort((a,b)=>b.length-a.length);
+function deriveCityFromName(name){
+  const found = KNOWN_CITIES.find(c=>name && name.startsWith(c));
+  return found || null;
 }
 
 async function loadLiveStations(){
@@ -793,7 +774,7 @@ async function loadLiveStations(){
   const live = stations.map(s=>{
     const r = readingByStation[s.id] || null;
     return {
-      id: s.id, name: s.name, city: null, lat: s.lat, lon: s.lon,
+      id: s.id, name: s.name, city: deriveCityFromName(s.name), lat: s.lat, lon: s.lon,
       sepaCategory: r ? r.category : null,
       pm25: r ? r.pm25 : null, pm10: r ? r.pm10 : null,
       so2: r ? r.so2 : null, no2: r ? r.no2 : null, o3: r ? r.o3 : null,
@@ -843,7 +824,6 @@ function render(){
     STATIONS = live;
     state.stationId = live[0].id;
     state.liveMode = true;
-    resolveAllStationCities(live); // fire-and-forget, re-renders as cities resolve
   }catch(e){
     console.error("Live station load failed, using demo data:", e);
     state.liveError = (e && (e.message || e.error_description || e.hint || JSON.stringify(e))) || String(e);
