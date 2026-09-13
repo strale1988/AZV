@@ -18,6 +18,12 @@
   :root{
     --ink:#132029; --paper:#ECEDE8; --accent:#3E7C8C; --line:#D3D2C8;
     --muted:#5B6B70; --muted2:#556358; --text2:#33454B;
+    /* Dark-dashboard-only tones (previously one-off hex values scattered
+       through the JS templates and CSS below — consolidated here so a
+       future re-theme or dark-mode pass only has to change one place). */
+    --dash-muted:#93A3A6; --dash-advisory:#C7D1D3;
+    --dash-border:#33454B; --dash-border2:#26363C; --scrollbar-thumb:#3A4A50;
+    --danger:#C1483B;
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
@@ -55,6 +61,7 @@
   nav.tabs button{background:none;border:none;cursor:pointer;padding:4px 0;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;}
   nav.tabs button.active{color:var(--ink);font-weight:700;border-bottom:2px solid var(--accent);}
   .langbox{display:flex;align-items:center;gap:4px;border-left:1px solid var(--line);padding-left:14px;flex-shrink:0;}
+  .script-indicator{font-size:11px;color:var(--muted2);margin-right:2px;letter-spacing:.2px;}
   .langbox button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted2);padding:2px 4px;}
   .langbox button.active{font-weight:700;color:var(--ink);}
   .adminbtn{display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--paper);border:none;border-radius:3px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:700;flex-shrink:0;}
@@ -62,19 +69,21 @@
   .dash-inner{padding:36px 20px 30px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:24px;}
   .dash-selects{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
   .dash-selects select{background:transparent;color:var(--paper);border:none;font-size:15px;font-weight:700;cursor:pointer;}
-  .dash-selects select.station{color:#C7D1D3;border:1px solid #33454B;border-radius:3px;font-size:13px;padding:2px 6px;}
+  .dash-selects select.station{color:var(--dash-advisory);border:1px solid var(--dash-border);border-radius:3px;font-size:13px;padding:2px 6px;}
   .dash-selects select option{color:var(--ink);}
-  .dash select:focus-visible{outline:2px solid #C7D1D3;outline-offset:2px;}
+  .dash select:focus-visible{outline:2px solid var(--dash-advisory);outline-offset:2px;}
   .aqi-num{font-size:clamp(44px,12vw,84px);font-weight:700;line-height:1;}
   .aqi-cat{font-size:15px;font-weight:700;margin-top:4px;}
-  .advisory{max-width:380px;font-size:14px;line-height:1.5;color:#C7D1D3;margin-top:12px;}
+  .advisory{max-width:380px;font-size:14px;line-height:1.5;color:var(--dash-advisory);margin-top:12px;}
   .pollutant-row{display:flex;gap:12px 20px;margin-top:16px;font-size:13px;flex-wrap:wrap;}
-  .live-badge{margin-top:18px;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#93A3A6;border:1px solid #33454B;border-radius:3px;padding:4px 8px;}
+  .live-badge{margin-top:18px;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);border:1px solid var(--dash-border);border-radius:3px;padding:4px 8px;}
+  .locate-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);background:none;border:1px solid var(--dash-border);border-radius:3px;padding:4px 8px;cursor:pointer;margin:-2px 0 6px;font-family:inherit;}
+  .locate-btn:disabled{opacity:.6;cursor:default;}
   .other-stations{min-width:min(280px,100%);max-height:320px;overflow-y:auto;padding-right:10px;position:relative;}
   .scroll-fade{position:sticky;bottom:0;left:0;right:0;height:22px;margin-top:-22px;background:linear-gradient(to bottom, rgba(19,32,41,0), var(--ink));pointer-events:none;}
-  .other-stations .oh{font-size:12px;letter-spacing:.3px;color:#93A3A6;margin-bottom:10px;}
-  .other-stations .cityhead{font-size:11px;color:#5B6B70;margin:8px 0 4px;}
-  .other-stations button{display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;border-bottom:1px solid #26363C;padding:5px 0;cursor:pointer;color:var(--paper);width:100%;text-align:left;}
+  .other-stations .oh{font-size:12px;letter-spacing:.3px;color:var(--dash-muted);margin-bottom:10px;}
+  .other-stations .cityhead{font-size:11px;color:var(--muted);margin:8px 0 4px;}
+  .other-stations button{display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;border-bottom:1px solid var(--dash-border2);padding:5px 0;cursor:pointer;color:var(--paper);width:100%;text-align:left;}
   .other-stations button span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .other-stations button span:last-child{font-weight:700;flex-shrink:0;}
   .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:40px;padding:36px 20px 60px;}
@@ -91,7 +100,7 @@
   .article-body{font-size:14px;line-height:1.6;color:var(--text2);margin-top:8px;}
   .pollutant-mini{border-bottom:1px solid var(--line);padding:10px 0;}
   .pollutant-mini .n{font-weight:700;font-size:14px;}
-  .pollutant-mini .d{font-size:13px;color:#4B575C;}
+  .pollutant-mini .d{font-size:13px;color:var(--text2);}
   .newsletter-box{margin-top:24px;border:1px solid var(--line);padding:16px;border-radius:3px;}
   .newsletter-box .t{font-weight:700;font-size:14px;margin-bottom:8px;}
   .glossary-item{border-bottom:1px solid var(--line);}
@@ -112,7 +121,7 @@
   .form-col{display:flex;flex-direction:column;gap:10px;}
   .label{font-size:13px;color:var(--muted);display:block;}
   .label input{display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--line);border-radius:3px;font-size:14px;}
-  .error-text{color:#C1483B;font-size:13px;}
+  .error-text{color:var(--danger);font-size:13px;}
   .admin-empty{max-width:500px;margin:0 auto;padding:60px 20px;text-align:center;color:var(--muted);}
   .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;}
   @media(max-width:700px){.admin-grid{grid-template-columns:1fr;}}
@@ -124,7 +133,7 @@
   .manage-row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:10px 0;}
   .manage-row .tt{font-weight:700;font-size:14px;}
   .manage-row .dd{font-size:12px;color:var(--muted2);}
-  .del-btn{background:none;border:none;cursor:pointer;color:#C1483B;}
+  .del-btn{background:none;border:none;cursor:pointer;color:var(--danger);}
   .skip-link{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:0 0 4px 0;z-index:1000;font-size:14px;font-weight:700;text-decoration:none;}
   .skip-link:focus{left:0;}
   footer.foot{border-top:1px solid var(--line);padding:20px;text-align:center;font-size:12px;color:var(--muted2);}
@@ -143,9 +152,9 @@
   }
 
   /* Custom thin scrollbar for the dark station list panel */
-  .other-stations{scrollbar-width:thin;scrollbar-color:#3A4A50 transparent;}
+  .other-stations{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) transparent;}
   .other-stations::-webkit-scrollbar{width:6px;}
-  .other-stations::-webkit-scrollbar-thumb{background:#3A4A50;border-radius:3px;}
+  .other-stations::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:3px;}
   .other-stations::-webkit-scrollbar-track{background:transparent;}
 
   /* Mobile header: brand full-width on its own row, nav+lang+admin
@@ -167,7 +176,7 @@
     nav.tabs{gap:10px;}
     nav.tabs button{padding:10px 2px;font-size:13px;min-height:44px;}
     .adminbtn{padding:10px;min-height:40px;}
-    .adminbtn-label{display:none;}
+    .adminbtn-label{font-size:12px;}
     .langbox{padding-left:10px;}
     .langbox button{padding:6px 6px;}
     .dash-inner{padding:28px 16px 24px;}
@@ -228,6 +237,7 @@ const T = {
     demo_badge:"Demo podaci — povežite API ključ za podatke uživo", live_badge:"Podaci uživo",
     last_updated:"Ažurirano:", city_unknown:"Ostale stanice", live_error_prefix:"Greška pri učitavanju uživo podataka:",
     gps_located:"Automatski izabrano prema vašoj lokaciji",
+    use_my_location:"Koristi moju lokaciju", locating:"Lociranje…",
     news_title:"Vesti o kvalitetu vazduha", read_more:"Pročitaj više", collapse:"Sakrij", no_news:"Trenutno nema objavljenih vesti.",
     edu_title:"Vodič kroz zagađivače",
     industrial_title:"Industrijski izvori zagađenja",
@@ -265,6 +275,7 @@ const T = {
     demo_badge:"Демо подаци — повежите API кључ за податке уживо", live_badge:"Подаци уживо",
     last_updated:"Ажурирано:", city_unknown:"Остале станице", live_error_prefix:"Грешка при учитавању уживо података:",
     gps_located:"Аутоматски изабрано према вашој локацији",
+    use_my_location:"Користи моју локацију", locating:"Локализација…",
     news_title:"Вести о квалитету ваздуха", read_more:"Прочитај више", collapse:"Сакриј", no_news:"Тренутно нема објављених вести.",
     edu_title:"Водич кроз загађиваче",
     industrial_title:"Индустријски извори загађења",
@@ -326,6 +337,19 @@ function latToCyr(str){
   }).join("");
 }
 function srDisplay(str){ return state.lang==="sr-cyrl" ? latToCyr(str) : str; }
+// Article title/excerpt/body come from the admin panel and get interpolated
+// straight into innerHTML elsewhere in this file. Admin publishing is
+// gated by Supabase Auth + RLS, so today's risk is low, but escaping here
+// means a misconfigured admin gate (or a compromised admin account) can't
+// turn into stored XSS on a page every visitor loads.
+function escapeHtml(str){
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+// Combines both: transliterate for the current script, then escape for HTML.
+function srSafe(str){ return escapeHtml(srDisplay(str)); }
 
 /* =================================================================
    DATA
@@ -336,7 +360,7 @@ function srDisplay(str){ return state.lang==="sr-cyrl" ? latToCyr(str) : str; }
 // since it sits inline next to numbers in tight list rows and table cells.
 const AQI_LEVELS = [
   {max:50,key:"good",color:"#4C9A6A",code:"D"},{max:100,key:"moderate",color:"#B98F1E",code:"U"},
-  {max:150,key:"usg",color:"#D97B29",code:"NO"},{max:200,key:"unhealthy",color:"#C1483B",code:"N"},
+  {max:150,key:"usg",color:"#D97B29",code:"NO"},{max:200,key:"unhealthy",color:"var(--danger)",code:"N"},
   {max:300,key:"vunhealthy",color:"#8B3F8C",code:"VN"},{max:9999,key:"hazardous",color:"#6B2338",code:"OP"},
 ];
 // Maps TraceTheToxin's real SEPA-style station categories to our own
@@ -716,7 +740,7 @@ function renderHeader(){
       </button>
       <div class="navgroup">
         <nav class="tabs">${tabs}</nav>
-        <div class="langbox">${icon('globe',14,'#5B6B70')}${langs}</div>
+        <div class="langbox"><span aria-hidden="true" class="script-indicator">Aa／Аа</span>${langs}</div>
         <button class="adminbtn" aria-label="${T_.nav_admin}" onclick="setView('${state.isAdmin ? "admin-panel" : "admin-login"}')">${icon('shield',14)} <span class="adminbtn-label">${T_.nav_admin}</span></button>
       </div>
     </div>
@@ -760,12 +784,12 @@ function renderHome(){
       <div>
         <div class="dash-selects">
           <div style="display:flex;align-items:center;gap:6px;">
-            ${icon('pin',15,'#3E7C8C')}
+            ${icon('pin',15,'var(--accent)')}
             <select onchange="setCityFirstStation(this.value)">${cityOptions}</select>
           </div>
           <select class="station" onchange="setStationId(this.value)">${stationOptions}</select>
         </div>
-        ${state.locatedViaGps ? `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#93A3A6;margin:-2px 0 6px;">${icon('pin',12,'#93A3A6')} ${T_.gps_located}</div>` : ""}
+        ${state.liveMode ? `<button type="button" class="locate-btn" onclick="manualLocate()" ${state.locatingGps?'disabled':''}>${icon(state.locatingGps?'loader':'pin',12,'var(--dash-muted)')} ${state.locatingGps ? T_.locating : (state.locatedViaGps ? T_.gps_located : T_.use_my_location)}</button>` : ""}
         <div class="tabular aqi-num" style="color:${level.color};font-size:${cur.sepaCategory?'clamp(28px,8vw,40px)':'clamp(44px,12vw,84px)'};">${headline}</div>
         <div class="aqi-cat" style="color:${level.color}">${cur.sepaCategory ? (cur.recordedAt ? `${T_.last_updated} ${formatStationTime(cur.recordedAt)}` : T_.aqi) : `${T_["cat_"+level.key]} · ${T_.aqi}`}</div>
         <p class="advisory">${T_["advisory_"+level.key]}</p>
@@ -775,7 +799,7 @@ function renderHome(){
           ${extraPollutants}
         </div>
         <div class="live-badge">${icon(state.loadingLive?'loader':'radio',12)} ${state.loadingLive ? "" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
-        ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:#93A3A6;margin-top:4px;max-width:380px;">${T_.live_error_public}</div>` : ""}
+        ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:var(--dash-muted);margin-top:4px;max-width:380px;">${T_.live_error_public}</div>` : ""}
       </div>
       <div class="other-stations">
         <div class="oh">${T_.other_stations}</div>
@@ -786,11 +810,11 @@ function renderHome(){
   </div>
   <div class="wrap grid2">
     <div>
-      <button class="sectionhead" onclick="setView('news')">${icon('newspaper',16,'#3E7C8C')}<span class="txt serif">${T_.news_title}</span></button>
+      <button class="sectionhead" onclick="setView('news')">${icon('newspaper',16,'var(--accent)')}<span class="txt serif">${T_.news_title}</span></button>
       ${newsPreview}
     </div>
     <div>
-      <button class="sectionhead" onclick="setView('education')">${icon('book',16,'#3E7C8C')}<span class="txt serif">${T_.edu_title}</span></button>
+      <button class="sectionhead" onclick="setView('education')">${icon('book',16,'var(--accent)')}<span class="txt serif">${T_.edu_title}</span></button>
       ${eduPreview}
       ${newsletterBox()}
     </div>
@@ -814,11 +838,11 @@ function articleRow(a, compact){
   <div class="article-row">
     <div class="article-date">${a.date}</div>
     ${photoHtml}
-    <div class="serif article-title ${compact?'compact':'full'}">${srDisplay(a.title_sr)}</div>
-    <div class="article-excerpt">${srDisplay(a.excerpt_sr)}</div>
+    <div class="serif article-title ${compact?'compact':'full'}">${srSafe(a.title_sr)}</div>
+    <div class="article-excerpt">${srSafe(a.excerpt_sr)}</div>
     ${compact ? "" : `
       <button class="readmore" onclick="toggleArticle('${a.id}')">${expanded ? T_.collapse : T_.read_more}</button>
-      ${expanded ? `<p class="article-body">${srDisplay(a.body_sr)}</p>${galleryHtml}` : ""}
+      ${expanded ? `<p class="article-body">${srSafe(a.body_sr)}</p>${galleryHtml}` : ""}
     `}
   </div>`;
 }
@@ -826,7 +850,7 @@ function articleRow(a, compact){
 function newsletterBox(){
   const T_=t();
   if (state.newsletterDone){
-    return `<div class="newsletter-box"><div class="t">${T_.newsletter_title}</div><div style="font-size:13px;color:#3E7C8C">${T_.newsletter_ok}</div></div>`;
+    return `<div class="newsletter-box"><div class="t">${T_.newsletter_title}</div><div style="font-size:13px;color:var(--accent)">${T_.newsletter_ok}</div></div>`;
   }
   return `
   <div class="newsletter-box">
@@ -840,7 +864,7 @@ function newsletterBox(){
 
 function renderNews(){
   const T_=t();
-  const list = state.articles.length ? state.articles.map(a=>articleRow(a,false)).join("") : `<p style="color:#5B6B70">${T_.no_news}</p>`;
+  const list = state.articles.length ? state.articles.map(a=>articleRow(a,false)).join("") : `<p style="color:var(--muted)">${T_.no_news}</p>`;
   return `<div class="wrap-narrow" style="padding-top:40px;padding-bottom:70px;">
     <h1 class="serif" style="font-size:32px;margin-bottom:24px;">${T_.news_title}</h1>
     ${list}
@@ -855,12 +879,12 @@ function renderEducation(){
     <div class="glossary-item">
       <button class="glossary-head" onclick="toggleTerm('${p.key}')">
         <span class="n serif">${p.name}</span>
-        <span class="chev ${open?'open':''}">${icon('chevron',18,'#3E7C8C')}</span>
+        <span class="chev ${open?'open':''}">${icon('chevron',18,'var(--accent)')}</span>
       </button>
       ${open ? `<div class="glossary-body">
         <p style="margin:0 0 8px;">${srDisplay(p.def_sr)}</p>
-        <p style="margin:0 0 8px;color:#5B6B70;"><strong>${T_.main_sources} </strong>${srDisplay(p.src_sr)}</p>
-        <p style="margin:0;color:#5B6B70;"><strong>${T_.smell_label} </strong>${srDisplay(p.smell_sr)}</p>
+        <p style="margin:0 0 8px;color:var(--muted);"><strong>${T_.main_sources} </strong>${srDisplay(p.src_sr)}</p>
+        <p style="margin:0;color:var(--muted);"><strong>${T_.smell_label} </strong>${srDisplay(p.smell_sr)}</p>
       </div>` : ""}
     </div>`;
   }).join("");
@@ -879,13 +903,13 @@ function renderEducation(){
 
   return `<div class="wrap-narrow" style="padding-top:40px;padding-bottom:70px;">
     <h1 class="serif" style="font-size:32px;margin-bottom:8px;">${T_.edu_title}</h1>
-    <p style="color:#5B6B70;margin-bottom:28px;font-size:14px;">${T_.edu_intro}</p>
+    <p style="color:var(--muted);margin-bottom:28px;font-size:14px;">${T_.edu_intro}</p>
     ${glossary}
-    <h2 class="serif" style="font-size:24px;margin-top:44px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">${icon('factory',19,'#3E7C8C')} ${T_.industrial_title}</h2>
-    <p style="color:#5B6B70;margin-bottom:20px;font-size:14px;">${T_.industrial_intro}</p>
+    <h2 class="serif" style="font-size:24px;margin-top:44px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">${icon('factory',19,'var(--accent)')} ${T_.industrial_title}</h2>
+    <p style="color:var(--muted);margin-bottom:20px;font-size:14px;">${T_.industrial_intro}</p>
     ${industrial}
-    <h2 class="serif" style="font-size:24px;margin-top:44px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">${icon('wind',19,'#3E7C8C')} ${T_.edu_smell_title}</h2>
-    <p style="color:#5B6B70;margin-bottom:20px;font-size:14px;">${T_.edu_smell_intro}</p>
+    <h2 class="serif" style="font-size:24px;margin-top:44px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">${icon('wind',19,'var(--accent)')} ${T_.edu_smell_title}</h2>
+    <p style="color:var(--muted);margin-bottom:20px;font-size:14px;">${T_.edu_smell_intro}</p>
     ${smells}
   </div>`;
 }
@@ -893,8 +917,8 @@ function renderEducation(){
 function renderReport(){
   const T_=t();
   return `<div class="wrap-report" style="padding-top:40px;padding-bottom:70px;">
-    <h1 class="serif" style="font-size:30px;margin-bottom:10px;display:flex;align-items:center;gap:10px;">${icon('flag',24,'#3E7C8C')} ${T_.report_title}</h1>
-    <p style="color:#33454B;font-size:14.5px;line-height:1.6;margin-bottom:26px;">${T_.report_intro}</p>
+    <h1 class="serif" style="font-size:30px;margin-bottom:10px;display:flex;align-items:center;gap:10px;">${icon('flag',24,'var(--accent)')} ${T_.report_title}</h1>
+    <p style="color:var(--text2);font-size:14.5px;line-height:1.6;margin-bottom:26px;">${T_.report_intro}</p>
     <div class="report-card" style="margin-bottom:0;">
       <div class="t">${T_.report_external_title}</div>
       <div class="d">${T_.report_external_desc}</div>
@@ -908,13 +932,13 @@ function renderAdminLogin(){
   if (state.authStep === "otp"){
     return `<div style="max-width:380px;margin:0 auto;padding:70px 20px;">
       <h1 class="serif" style="font-size:26px;margin-bottom:8px;">${T_.admin_login_title}</h1>
-      <p style="font-size:13px;color:#5B6B70;margin-bottom:20px;">${T_.otp_sent_to} <strong>${state.pendingEmail}</strong></p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">${T_.otp_sent_to} <strong>${state.pendingEmail}</strong></p>
       <form onsubmit="verifyOtp(event)" class="form-col">
         <label class="label">${T_.otp_placeholder}<input id="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" style="text-align:center;font-size:20px;letter-spacing:4px;"></label>
         ${state.loginError ? `<div class="error-text">${state.loginError}</div>` : ""}
         <button type="submit" class="btn btn-ink" style="margin-top:8px;">${icon('login',14)} ${T_.verify_btn}</button>
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;">
-          <button type="button" onclick="resetAuthStep()" style="background:none;border:none;color:#5B6B70;cursor:pointer;">${T_.change_email}</button>
+          <button type="button" onclick="resetAuthStep()" style="background:none;border:none;color:var(--muted);cursor:pointer;">${T_.change_email}</button>
           <button type="button" onclick="resendOtp()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:700;">${T_.resend_code}</button>
         </div>
       </form>
@@ -926,12 +950,12 @@ function renderAdminLogin(){
       <label class="label">${T_.email}
         <div style="display:flex;align-items:center;border:1px solid var(--line);border-radius:3px;padding:0 10px;">
           <input id="login-user" type="text" autocomplete="username" style="border:none;padding:9px 0;flex:1;font-size:14px;">
-          <span style="font-size:13px;color:#8B968B;">${ADMIN_EMAIL_DOMAIN}</span>
+          <span style="font-size:13px;color:var(--muted2);">${ADMIN_EMAIL_DOMAIN}</span>
         </div>
       </label>
       ${state.loginError ? `<div class="error-text">${state.loginError}</div>` : ""}
       <button type="submit" class="btn btn-ink" style="margin-top:8px;">${icon('login',14)} ${T_.login_btn}</button>
-      <div style="font-size:12px;color:#8B968B;margin-top:4px;">${T_.domain_note}</div>
+      <div style="font-size:12px;color:var(--muted2);margin-top:4px;">${T_.domain_note}</div>
     </form>
   </div>`;
 }
@@ -953,12 +977,12 @@ function renderAdminPanel(){
     <div class="manage-row">
       <div style="display:flex;align-items:center;gap:10px;">
         ${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none';">` : ""}
-        <div><div class="tt">${srDisplay(a.title_sr)}</div><div class="dd">${a.date}</div></div>
+        <div><div class="tt">${srSafe(a.title_sr)}</div><div class="dd">${a.date}</div></div>
       </div>
       <button class="del-btn" onclick="confirmDeleteArticle('${a.id}')">${icon('trash',16)}</button>
     </div>`;
   }).join("")
-    : `<p style="color:#5B6B70;font-size:13px;">${T_.no_articles_yet}</p>`;
+    : `<p style="color:var(--muted);font-size:13px;">${T_.no_articles_yet}</p>`;
 
   return `<div class="wrap-admin" style="padding-top:40px;padding-bottom:80px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
@@ -967,7 +991,7 @@ function renderAdminPanel(){
     </div>
     <div class="admin-grid">
       <div>
-        <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon('plus',15,'#3E7C8C')} ${T_.add_article}</h2>
+        <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon('plus',15,'var(--accent)')} ${T_.add_article}</h2>
         <form onsubmit="publishArticle(event)" class="form-col">
           <input id="new-title" class="field" placeholder="${T_.article_title}" ${state.publishing?"disabled":""}>
           <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}" ${state.publishing?"disabled":""}>
@@ -985,8 +1009,8 @@ function renderAdminPanel(){
         <div style="max-height:260px;overflow-y:auto;overflow-x:auto;">
           <table class="data"><thead><tr><th>${T_.station}</th><th>${T_.aqi}</th><th>${T_.pm25}</th><th>${T_.pm10}</th></tr></thead><tbody>${dataRows}</tbody></table>
         </div>
-        <div style="font-size:12px;color:#8B968B;margin-top:10px;display:flex;align-items:center;gap:6px;">${state.loadingLive ? icon('loader',12,'#8B968B') : ""} ${state.loadingLive ? "" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
-        ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:#C1483B;margin-top:4px;">${T_.live_error_prefix} ${state.liveError}</div>` : ""}
+        <div style="font-size:12px;color:var(--muted2);margin-top:10px;display:flex;align-items:center;gap:6px;">${state.loadingLive ? icon('loader',12,'var(--muted2)') : ""} ${state.loadingLive ? "" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
+        ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:var(--danger);margin-top:4px;">${T_.live_error_prefix} ${state.liveError}</div>` : ""}
       </div>
     </div>
     <div style="margin-top:44px;">
@@ -1136,6 +1160,20 @@ function locateNearestStation(stations){
       { enableHighAccuracy:false, timeout:8000, maximumAge:600000 }
     );
   });
+}
+// Manual retry for the auto-locate-on-load attempt above. Needed because the
+// automatic one runs silently exactly once on page load — if someone denies
+// the permission prompt (or it times out) and then changes their mind, there
+// was previously no way to trigger it again short of digging into browser
+// settings.
+async function manualLocate(){
+  if (!state.liveMode || state.locatingGps) return;
+  state.locatingGps = true; state.locatedViaGps = false; render();
+  try{
+    const nearest = await locateNearestStation(STATIONS);
+    if (nearest){ state.stationId = nearest.id; state.locatedViaGps = true; state.stationManuallySet = false; }
+  }catch(e){ console.error("Manual GPS locate failed:", e); }
+  finally{ state.locatingGps = false; render(); }
 }
 
 /* =================================================================
