@@ -164,6 +164,7 @@ const T = {
     login_error:"Pogrešno korisničko ime ili lozinka.", login_hint:"Demo nalog: admin / vazduh2026",
     admin_panel:"Administratorska tabla", add_article:"Nova vest", article_title:"Naslov", article_excerpt:"Kratak opis", article_body:"Tekst vesti", publish:"Objavi",
     manage_news:"Upravljanje vestima", data_overview:"Pregled podataka", no_articles_yet:"Još uvek nema objavljenih vesti.", station:"Stanica",
+    article_photo:"Fotografija (opciono)", publishing:"Objavljivanje…", photo_upload_error_prefix:"Vest je objavljena, ali slika nije uspela da se otpremi:", photo_pending_badge:"Slika čeka pregled",
     footer_note:"Podaci o kvalitetu vazduha služe isključivo u informativne svrhe.",
     report_title:"Prijavite zagađenje vazduha",
     report_intro:"Primetili ste dim, neprijatan miris ili gustu maglu koja ne izgleda kao obična magla? Prijavite to — svaka prijava pomaže da se identifikuju zagađivači.",
@@ -195,6 +196,7 @@ const T = {
     login_error:"Погрешно корисничко име или лозинка.", login_hint:"Демо налог: admin / vazduh2026",
     admin_panel:"Административна табла", add_article:"Нова вест", article_title:"Наслов", article_excerpt:"Кратак опис", article_body:"Текст вести", publish:"Објави",
     manage_news:"Управљање вестима", data_overview:"Преглед података", no_articles_yet:"Још увек нема објављених вести.", station:"Станица",
+    article_photo:"Фотографија (опционо)", publishing:"Објављивање…", photo_upload_error_prefix:"Вест је објављена, али слика није успела да се отпреми:", photo_pending_badge:"Слика чека преглед",
     footer_note:"Подаци о квалитету ваздуха служе искључиво у информативне сврхе.",
     report_title:"Пријавите загађење ваздуха",
     report_intro:"Приметили сте дим, непријатан мирис или густу маглу која не изгледа као обична магла? Пријавите то — свака пријава помаже да се идентификују загађивачи.",
@@ -376,6 +378,21 @@ const INDUSTRIAL_SOURCES = [
 ];
 
 /* =================================================================
+   ARTICLE PHOTOS — served through a Supabase Edge Function proxy
+   (az-news-photo) in front of the shared tracethebreak-photos Cloudflare
+   Worker/R2 bucket, the same photo infra TraceTheBreak uses for report
+   photos. News photos live under the "news/" prefix in that bucket, kept
+   separate from report photos.
+================================================================= */
+function articlePhotoUrl(article){
+  if (!article || !article.photo_path) return null;
+  // TTT_SUPABASE_URL is declared further down this file; computed lazily
+  // here (rather than as a top-level const) since this function is only
+  // ever called after the whole script has finished loading.
+  return `${TTT_SUPABASE_URL}/functions/v1/az-news-photo?path=${encodeURIComponent(article.photo_path)}`;
+}
+
+/* =================================================================
    STORAGE — uses window.storage when previewing in Claude,
    falls back to localStorage on a real deployed server.
    NOTE: localStorage is per-browser only. For real shared/admin-wide
@@ -404,6 +421,8 @@ const state = {
   lang:"sr-latn", view:"home", stationId:"ns-liman",
   isAdmin:false, loginError:"",
   articles: SEED_ARTICLES.slice(),
+  articlesLoadError:null,
+  publishing:false, publishError:"", deleteError:"",
   expandedArticle:null, expandedTerm:null,
   newsletterDone:false,
   liveMode:false, loadingLive:true, liveError:null,
@@ -438,26 +457,99 @@ function doLogin(e){
 }
 function doLogout(){ state.isAdmin=false; setView("home"); }
 
-async function persistArticles(){ await storageSet("az:articles", JSON.stringify(state.articles), true); }
+async function loadArticlesFromSupabase(){
+  const client = getTttClient();
+  if (!client) throw new Error("Supabase client unavailable");
+  const { data, error } = await client
+    .from("az_articles")
+    .select("*")
+    .order("created_at", { ascending:false });
+  if (error) throw error;
+  return (data||[]).map(row=>({
+    id: row.id,
+    date: (row.created_at||"").slice(0,10),
+    title_sr: row.title_sr, excerpt_sr: row.excerpt_sr, body_sr: row.body_sr,
+    photo_path: row.photo_path, photo_status: row.photo_status,
+  }));
+}
 
-function publishArticle(e){
+async function uploadArticlePhoto(articleId, file){
+  const buf = await file.arrayBuffer();
+  const res = await fetch(`${TTT_SUPABASE_URL}/functions/v1/az-news-photo-upload`, {
+    method:"POST",
+    headers:{
+      "x-az-admin-key": AZ_ADMIN_KEY,
+      "x-article-id": articleId,
+      "x-photo-content-type": file.type || "image/jpeg",
+    },
+    body: buf,
+  });
+  const json = await res.json().catch(()=>({ok:false,error:"bad response"}));
+  if (!res.ok || !json.ok) throw new Error(json.error || `upload failed (${res.status})`);
+  return json.path;
+}
+
+async function publishArticle(e){
   e.preventDefault();
   const title = document.getElementById("new-title").value.trim();
   const excerpt = document.getElementById("new-excerpt").value.trim();
   const body = document.getElementById("new-body").value.trim();
+  const photoInput = document.getElementById("new-photo");
+  const file = photoInput && photoInput.files && photoInput.files[0];
   if (!title) return;
-  const article = {
-    id:`a-${Date.now()}`, date:new Date().toISOString().slice(0,10),
-    title_sr:title, excerpt_sr:excerpt, body_sr:body,
-  };
-  state.articles = [article, ...state.articles];
-  persistArticles();
-  render();
+
+  state.publishing = true; state.publishError = ""; render();
+  try{
+    const client = getTttClient();
+    if (!client) throw new Error("Supabase client unavailable");
+    const { data, error } = await client
+      .from("az_articles")
+      .insert({ title_sr:title, excerpt_sr:excerpt, body_sr:body })
+      .select()
+      .single();
+    if (error) throw error;
+
+    let photo_path = null, photo_status = null;
+    if (file){
+      try{
+        photo_path = await uploadArticlePhoto(data.id, file);
+        photo_status = "pending";
+      }catch(photoErr){
+        // Article is already published — surface the photo failure but
+        // don't lose the article itself.
+        state.publishError = t().photo_upload_error_prefix + " " + photoErr.message;
+      }
+    }
+
+    const article = {
+      id: data.id, date:(data.created_at||"").slice(0,10),
+      title_sr:data.title_sr, excerpt_sr:data.excerpt_sr, body_sr:data.body_sr,
+      photo_path, photo_status,
+    };
+    state.articles = [article, ...state.articles];
+  }catch(err){
+    state.publishError = (err && err.message) || String(err);
+  }finally{
+    state.publishing = false; render();
+  }
 }
-function deleteArticle(id){
+
+async function deleteArticle(id){
+  const prev = state.articles;
   state.articles = state.articles.filter(a=>a.id!==id);
-  persistArticles();
   render();
+  try{
+    const client = getTttClient();
+    if (!client) throw new Error("Supabase client unavailable");
+    const { error } = await client.from("az_articles").delete().eq("id", id);
+    if (error) throw error;
+  }catch(err){
+    // Roll back on failure so the admin isn't shown a deleted-looking
+    // article that's actually still in the database.
+    state.articles = prev;
+    state.deleteError = (err && err.message) || String(err);
+    render();
+  }
 }
 
 function subscribeNewsletter(e){
@@ -569,9 +661,16 @@ function renderHome(){
 function articleRow(a, compact){
   const T_=t();
   const expanded = state.expandedArticle===a.id;
+  const photoUrl = articlePhotoUrl(a);
+  const photoHtml = photoUrl ? `
+    <div style="margin-bottom:8px;position:relative;">
+      <img src="${photoUrl}" alt="" style="width:100%;max-height:${compact?160:280}px;object-fit:cover;border-radius:3px;display:block;" onerror="this.style.display='none';">
+      ${a.photo_status==="pending" ? `<span style="position:absolute;bottom:6px;right:6px;background:rgba(19,32,41,.75);color:#ECEDE8;font-size:11px;padding:2px 6px;border-radius:3px;">${T_.photo_pending_badge}</span>` : ""}
+    </div>` : "";
   return `
   <div class="article-row">
     <div class="article-date">${a.date}</div>
+    ${photoHtml}
     <div class="serif article-title ${compact?'compact':'full'}">${srDisplay(a.title_sr)}</div>
     <div class="article-excerpt">${srDisplay(a.excerpt_sr)}</div>
     ${compact ? "" : `
@@ -685,9 +784,18 @@ function renderAdminPanel(){
     const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
     return `<tr><td>${s.city ? s.city+" — " : ""}${s.name}</td><td class="tabular" style="color:${l.color};font-weight:700;">${badge}</td><td class="tabular">${fmtNum(s.pm25)}</td><td class="tabular">${fmtNum(s.pm10)}</td></tr>`;
   }).join("");
-  const newsRows = state.articles.length ? state.articles.map(a=>`
-    <div class="manage-row"><div><div class="tt">${srDisplay(a.title_sr)}</div><div class="dd">${a.date}</div></div>
-    <button class="del-btn" onclick="deleteArticle('${a.id}')">${icon('trash',16)}</button></div>`).join("")
+  const newsRows = state.articles.length ? state.articles.map(a=>{
+    const thumbUrl = articlePhotoUrl(a);
+    const statusNote = a.photo_path ? `<div class="dd">${a.photo_status==="pending" ? T_.photo_pending_badge : (a.photo_status||"")}</div>` : "";
+    return `
+    <div class="manage-row">
+      <div style="display:flex;align-items:center;gap:10px;">
+        ${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none';">` : ""}
+        <div><div class="tt">${srDisplay(a.title_sr)}</div><div class="dd">${a.date}</div>${statusNote}</div>
+      </div>
+      <button class="del-btn" onclick="deleteArticle('${a.id}')">${icon('trash',16)}</button>
+    </div>`;
+  }).join("")
     : `<p style="color:#5B6B70;font-size:13px;">${T_.no_articles_yet}</p>`;
 
   return `<div class="wrap-admin" style="padding-top:40px;padding-bottom:80px;">
@@ -699,10 +807,15 @@ function renderAdminPanel(){
       <div>
         <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon('plus',15,'#3E7C8C')} ${T_.add_article}</h2>
         <form onsubmit="publishArticle(event)" class="form-col">
-          <input id="new-title" class="field" placeholder="${T_.article_title}">
-          <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}">
-          <textarea id="new-body" class="field" rows="5" placeholder="${T_.article_body}"></textarea>
-          <button type="submit" class="btn btn-accent" style="align-self:flex-start;">${T_.publish}</button>
+          <input id="new-title" class="field" placeholder="${T_.article_title}" ${state.publishing?"disabled":""}>
+          <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}" ${state.publishing?"disabled":""}>
+          <textarea id="new-body" class="field" rows="5" placeholder="${T_.article_body}" ${state.publishing?"disabled":""}></textarea>
+          <label class="label">${T_.article_photo}
+            <input id="new-photo" type="file" accept="image/*" class="field" style="padding:6px 10px;" ${state.publishing?"disabled":""}>
+          </label>
+          <button type="submit" class="btn btn-accent" style="align-self:flex-start;" ${state.publishing?"disabled":""}>${state.publishing ? T_.publishing : T_.publish}</button>
+          ${state.publishError ? `<div class="error-text">${state.publishError}</div>` : ""}
+          ${state.deleteError ? `<div class="error-text">${state.deleteError}</div>` : ""}
         </form>
       </div>
       <div>
@@ -730,6 +843,13 @@ function renderAdminPanel(){
 ================================================================= */
 const TTT_SUPABASE_URL = "https://fnkqmwweljsupbmerbkh.supabase.co";
 const TTT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZua3Ftd3dlbGpzdXBibWVyYmtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3OTcwODUsImV4cCI6MjA5NzM3MzA4NX0.eX3mxnSpGmJ6Ebw7Y4F_jHiJarPH4ri9WNYXwmLi16I";
+// Shared secret required by the az-news-photo-upload edge function. This
+// does have to live client-side (the admin panel is only a password gate,
+// not real auth) but it's a low-value secret — it can only ever cause an
+// article photo upload, never read the R2/Worker admin secret itself,
+// which stays entirely inside the edge function. Rotate by changing both
+// this value and the function's AZ_ADMIN_KEY secret together.
+const AZ_ADMIN_KEY = "vazduh2026-news-photos";
 let tttClient = null;
 function getTttClient(){
   if (!tttClient && window.supabase) tttClient = window.supabase.createClient(TTT_SUPABASE_URL, TTT_SUPABASE_KEY);
@@ -806,12 +926,14 @@ function render(){
 ================================================================= */
 (async function init(){
   try{
-    const res = await storageGet("az:articles", true);
-    if (res && res.value){
-      const parsed = JSON.parse(res.value);
-      if (Array.isArray(parsed) && parsed.length) state.articles = parsed;
-    }
-  }catch(e){}
+    const loaded = await loadArticlesFromSupabase();
+    // Only replace the seed articles if Supabase actually has rows —
+    // an empty (freshly-migrated) table shouldn't wipe out the seed news.
+    if (loaded.length) state.articles = loaded;
+  }catch(e){
+    console.error("Article load from Supabase failed, using seed data:", e);
+    state.articlesLoadError = (e && e.message) || String(e);
+  }
   render();
 
   // Live station attempt — reads TraceTheToxin's own Supabase tables;
