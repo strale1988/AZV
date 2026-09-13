@@ -44,12 +44,12 @@
   .brand-name{font-size:26px;font-weight:700;color:var(--ink);}
   .navgroup{display:flex;align-items:center;gap:16px;font-size:14px;flex-wrap:wrap;}
   nav.tabs{display:flex;gap:14px;}
-  nav.tabs button{background:none;border:none;cursor:pointer;padding:4px 0;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;}
+  nav.tabs button{background:none;border:none;cursor:pointer;padding:4px 0;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;}
   nav.tabs button.active{color:var(--ink);font-weight:700;border-bottom:2px solid var(--accent);}
-  .langbox{display:flex;align-items:center;gap:4px;border-left:1px solid var(--line);padding-left:14px;}
+  .langbox{display:flex;align-items:center;gap:4px;border-left:1px solid var(--line);padding-left:14px;flex-shrink:0;}
   .langbox button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted2);padding:2px 4px;}
   .langbox button.active{font-weight:700;color:var(--ink);}
-  .adminbtn{display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--paper);border:none;border-radius:3px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:700;}
+  .adminbtn{display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--paper);border:none;border-radius:3px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:700;flex-shrink:0;}
   .dash{background:var(--ink);color:var(--paper);}
   .dash-inner{padding:36px 20px 30px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:24px;}
   .dash-selects{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
@@ -137,6 +137,16 @@
   .other-stations::-webkit-scrollbar-thumb{background:#3A4A50;border-radius:3px;}
   .other-stations::-webkit-scrollbar-track{background:transparent;}
 
+  /* Mobile header: brand full-width on its own row, nav+lang+admin
+     as one non-wrapping row below (tabs scroll horizontally rather
+     than the admin button orphaning onto its own line). */
+  @media(max-width:600px){
+    .topbar-inner{flex-direction:column;align-items:stretch;}
+    .navgroup{width:100%;flex-wrap:nowrap;justify-content:space-between;gap:10px;}
+    nav.tabs{flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    nav.tabs::-webkit-scrollbar{display:none;}
+  }
+
   /* Mobile: bigger tap targets, tighter spacing */
   @media(max-width:480px){
     .brand-name{font-size:22px;}
@@ -145,12 +155,14 @@
     .wrap,.wrap-narrow,.wrap-report,.wrap-admin{padding:0 16px;}
     nav.tabs{gap:10px;}
     nav.tabs button{padding:10px 2px;font-size:13px;min-height:44px;}
-    .adminbtn{padding:10px 14px;min-height:40px;}
+    .adminbtn{padding:10px;min-height:40px;}
+    .adminbtn-label{display:none;}
     .langbox{padding-left:10px;}
     .langbox button{padding:6px 6px;}
     .dash-inner{padding:28px 16px 24px;}
     .grid2{padding:28px 16px 48px;gap:32px;}
     .advisory{max-width:100%;}
+    .pollutant-row{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
     .btn{padding:11px 18px;}
     .readmore{padding:12px 0 0;}
     .del-btn{padding:8px;}
@@ -658,7 +670,7 @@ function renderHeader(){
       <div class="navgroup">
         <nav class="tabs">${tabs}</nav>
         <div class="langbox">${icon('globe',14,'#5B6B70')}${langs}</div>
-        <button class="adminbtn" onclick="setView('${state.isAdmin ? "admin-panel" : "admin-login"}')">${icon('shield',14)} ${T_.nav_admin}</button>
+        <button class="adminbtn" aria-label="${T_.nav_admin}" onclick="setView('${state.isAdmin ? "admin-panel" : "admin-login"}')">${icon('shield',14)} <span class="adminbtn-label">${T_.nav_admin}</span></button>
       </div>
     </div>
   </header>`;
