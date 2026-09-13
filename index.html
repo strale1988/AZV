@@ -38,7 +38,7 @@
   .spin{animation:spin 1s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
   header.topbar{border-bottom:1px solid var(--line);}
-  .topbar-inner{padding:calc(26px + env(safe-area-inset-top)) 20px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .topbar-inner{padding:26px 20px 22px;padding-top:calc(26px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
   .brand{display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;padding:0;}
   .brand-logo{display:block;width:36px;height:36px;}
   .brand-name{font-size:26px;font-weight:700;color:var(--ink);}
@@ -151,8 +151,8 @@
   @media(max-width:480px){
     .brand-name{font-size:22px;}
     .brand-logo{width:30px;height:30px;}
-    .topbar-inner{padding:calc(28px + env(safe-area-inset-top)) 16px 20px;}
-    .wrap,.wrap-narrow,.wrap-report,.wrap-admin{padding:0 16px;}
+    .topbar-inner{padding:28px 16px 20px;padding-top:calc(28px + env(safe-area-inset-top));}
+    .wrap,.wrap-narrow,.wrap-report,.wrap-admin{padding-left:16px;padding-right:16px;}
     nav.tabs{gap:10px;}
     nav.tabs button{padding:10px 2px;font-size:13px;min-height:44px;}
     .adminbtn{padding:10px;min-height:40px;}
