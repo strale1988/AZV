@@ -24,6 +24,22 @@
     --dash-muted:#93A3A6; --dash-advisory:#C7D1D3;
     --dash-border:#33454B; --dash-border2:#26363C; --scrollbar-thumb:#3A4A50;
     --danger:#C1483B;
+    /* Fixed "always dark accent surface" tokens — the hero dashboard card,
+       the ink-colored buttons, and the skip link are a deliberate dark
+       accent against the page in BOTH light and dark mode (same idea as a
+       printed masthead panel), so they're pinned here rather than tracking
+       --ink/--paper, which below become theme-adaptive text/background
+       roles instead. Values match light mode's --ink/--paper exactly, so
+       light-mode rendering is unchanged; only the dark-mode media query
+       below actually depends on this split existing. */
+    --surface-dark:#132029; --on-dark:#ECEDE8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#181A17; --ink:#EDEEEA; --line:#3A3D33;
+      --muted:#9FB0B5; --muted2:#A9C0A0; --text2:#CDD6D8;
+      --accent:#5FA8BA; --danger:#E0685A;
+    }
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
@@ -44,7 +60,7 @@
   .wrap-report{max-width:620px;margin:0 auto;padding:0 20px;}
   .wrap-admin{max-width:900px;margin:0 auto;padding:0 20px;}
   .btn{display:inline-flex;align-items:center;gap:6px;border-radius:3px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:700;border:none;}
-  .btn-ink{background:var(--ink);color:var(--paper);}
+  .btn-ink{background:var(--surface-dark);color:var(--on-dark);}
   .btn-accent{background:var(--accent);color:#fff;}
   .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--line);}
   .field{padding:9px 10px;border:1px solid var(--line);border-radius:3px;font-size:14px;width:100%;}
@@ -64,13 +80,13 @@
   .script-indicator{font-size:11px;color:var(--muted2);margin-right:2px;letter-spacing:.2px;}
   .langbox button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted2);padding:2px 4px;}
   .langbox button.active{font-weight:700;color:var(--ink);}
-  .adminbtn{display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--paper);border:none;border-radius:3px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:700;flex-shrink:0;}
-  .dash{background:var(--ink);color:var(--paper);}
+  .adminbtn{display:flex;align-items:center;gap:6px;background:var(--surface-dark);color:var(--on-dark);border:none;border-radius:3px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:700;flex-shrink:0;}
+  .dash{background:var(--surface-dark);color:var(--on-dark);}
   .dash-inner{padding:36px 20px 30px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:24px;}
   .dash-selects{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
-  .dash-selects select{background:transparent;color:var(--paper);border:none;font-size:15px;font-weight:700;cursor:pointer;}
+  .dash-selects select{background:transparent;color:var(--on-dark);border:none;font-size:15px;font-weight:700;cursor:pointer;}
   .dash-selects select.station{color:var(--dash-advisory);border:1px solid var(--dash-border);border-radius:3px;font-size:13px;padding:2px 6px;}
-  .dash-selects select option{color:var(--ink);}
+  .dash-selects select option{color:var(--surface-dark);}
   .dash select:focus-visible{outline:2px solid var(--dash-advisory);outline-offset:2px;}
   .aqi-num{font-size:clamp(44px,12vw,84px);font-weight:700;line-height:1;}
   .aqi-cat{font-size:15px;font-weight:700;margin-top:4px;}
@@ -80,10 +96,10 @@
   .locate-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);background:none;border:1px solid var(--dash-border);border-radius:3px;padding:4px 8px;cursor:pointer;margin:-2px 0 6px;font-family:inherit;}
   .locate-btn:disabled{opacity:.6;cursor:default;}
   .other-stations{min-width:min(280px,100%);max-height:320px;overflow-y:auto;padding-right:10px;position:relative;}
-  .scroll-fade{position:sticky;bottom:0;left:0;right:0;height:22px;margin-top:-22px;background:linear-gradient(to bottom, rgba(19,32,41,0), var(--ink));pointer-events:none;}
+  .scroll-fade{position:sticky;bottom:0;left:0;right:0;height:22px;margin-top:-22px;background:linear-gradient(to bottom, rgba(19,32,41,0), var(--surface-dark));pointer-events:none;}
   .other-stations .oh{font-size:12px;letter-spacing:.3px;color:var(--dash-muted);margin-bottom:10px;}
   .other-stations .cityhead{font-size:11px;color:var(--muted);margin:8px 0 4px;}
-  .other-stations button{display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;border-bottom:1px solid var(--dash-border2);padding:5px 0;cursor:pointer;color:var(--paper);width:100%;text-align:left;}
+  .other-stations button{display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;border-bottom:1px solid var(--dash-border2);padding:5px 0;cursor:pointer;color:var(--on-dark);width:100%;text-align:left;}
   .other-stations button span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .other-stations button span:last-child{font-weight:700;flex-shrink:0;}
   .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:40px;padding:36px 20px 60px;}
@@ -134,7 +150,7 @@
   .manage-row .tt{font-weight:700;font-size:14px;}
   .manage-row .dd{font-size:12px;color:var(--muted2);}
   .del-btn{background:none;border:none;cursor:pointer;color:var(--danger);}
-  .skip-link{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:0 0 4px 0;z-index:1000;font-size:14px;font-weight:700;text-decoration:none;}
+  .skip-link{position:absolute;left:-9999px;top:0;background:var(--surface-dark);color:var(--on-dark);padding:10px 16px;border-radius:0 0 4px 0;z-index:1000;font-size:14px;font-weight:700;text-decoration:none;}
   .skip-link:focus{left:0;}
   footer.foot{border-top:1px solid var(--line);padding:20px;text-align:center;font-size:12px;color:var(--muted2);}
 
@@ -719,29 +735,73 @@ function subscribeNewsletter(e){
 }
 
 /* =================================================================
+   EVENT DELEGATION — every interactive element in the templates below
+   carries a data-action (and, where needed, a data-arg) instead of an
+   inline onclick/onchange/onsubmit. A single set of listeners lives on
+   the #app container itself, which is never replaced (only its
+   innerHTML is, on every render()) — so this wiring survives every
+   re-render without needing to be reattached. This keeps the app's
+   HTML free of inline JS, which is both easier to keep consistent
+   under a Content-Security-Policy and easier to audit for injected
+   content, since template strings no longer need to build executable
+   attribute values.
+   Deliberately NOT covered: the onerror="this.style.display='none'"
+   fallback on a few <img> tags — `error` events don't bubble, so
+   delegating those would need a separate capture-phase listener for
+   very little benefit over the couple of inline one-liners they are.
+================================================================= */
+const ACTIONS = {
+  setView, setLang, setStationId, setCityFirstStation, manualLocate,
+  toggleArticle, toggleTerm, resetAuthStep, resendOtp, confirmDeleteArticle,
+  doLogout, subscribeNewsletter, verifyOtp, requestOtp, publishArticle,
+};
+function initEventDelegation(){
+  const app = document.getElementById("app");
+  app.addEventListener("click", e => {
+    const el = e.target.closest("[data-action]");
+    if (!el) return;
+    const fn = ACTIONS[el.dataset.action];
+    if (fn) fn(el.dataset.arg);
+  });
+  app.addEventListener("change", e => {
+    const el = e.target.closest("[data-action]");
+    if (!el) return;
+    const fn = ACTIONS[el.dataset.action];
+    if (fn) fn(el.value);
+  });
+  app.addEventListener("submit", e => {
+    const el = e.target.closest("[data-action]");
+    if (!el) return;
+    const fn = ACTIONS[el.dataset.action];
+    if (fn) fn(e); // handlers call e.preventDefault() themselves
+  });
+}
+initEventDelegation();
+
+/* =================================================================
    RENDER — small template helpers
 ================================================================= */
 function renderHeader(){
   const T_=t();
   const tabs = ["home","news","education","report"].map(v=>{
     const label = v==="home"?T_.nav_home : v==="news"?T_.nav_news : v==="education"?T_.nav_edu : T_.nav_report;
-    return `<button class="${state.view===v?'active':''}" onclick="setView('${v}')">${label}</button>`;
+    return `<button class="${state.view===v?'active':''}" data-action="setView" data-arg="${v}">${label}</button>`;
   }).join("");
   const langs = ["sr-latn","sr-cyrl"].map(l=>{
     const label = l==="sr-latn"?"SR":"СР";
-    return `<button class="${state.lang===l?'active':''}" onclick="setLang('${l}')">${label}</button>`;
+    return `<button class="${state.lang===l?'active':''}" data-action="setLang" data-arg="${l}">${label}</button>`;
   }).join("");
   return `
   <header class="topbar">
     <div class="wrap topbar-inner">
-      <button class="brand" onclick="setView('home')">
+      <button class="brand" data-action="setView" data-arg="home">
         <img src="icons/favicon.png" alt="" class="brand-logo">
         <span class="serif brand-name">${T_.title}</span>
       </button>
       <div class="navgroup">
         <nav class="tabs">${tabs}</nav>
         <div class="langbox"><span aria-hidden="true" class="script-indicator">Aa／Аа</span>${langs}</div>
-        <button class="adminbtn" aria-label="${T_.nav_admin}" onclick="setView('${state.isAdmin ? "admin-panel" : "admin-login"}')">${icon('shield',14)} <span class="adminbtn-label">${T_.nav_admin}</span></button>
+        <button class="adminbtn" aria-label="${T_.nav_admin}" data-action="setView" data-arg="${state.isAdmin ? "admin-panel" : "admin-login"}">${icon('shield',14)} <span class="adminbtn-label">${T_.nav_admin}</span></button>
       </div>
     </div>
   </header>`;
@@ -758,7 +818,7 @@ function renderHome(){
       const l = levelFor(s);
       const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
       const catLabel = T_["cat_"+l.key];
-      return `<button onclick="setStationId('${s.id}')"><span>${s.name}</span><span class="tabular" style="display:inline-flex;align-items:center;gap:6px;color:${l.color}">${levelChip(l,catLabel)}${badge}</span></button>`;
+      return `<button data-action="setStationId" data-arg="${s.id}"><span>${s.name}</span><span class="tabular" style="display:inline-flex;align-items:center;gap:6px;color:${l.color}">${levelChip(l,catLabel)}${badge}</span></button>`;
     }).join("");
     if (!rows) return "";
     return `<div><div class="cityhead">${cityName}</div>${rows}</div>`;
@@ -785,11 +845,11 @@ function renderHome(){
         <div class="dash-selects">
           <div style="display:flex;align-items:center;gap:6px;">
             ${icon('pin',15,'var(--accent)')}
-            <select onchange="setCityFirstStation(this.value)">${cityOptions}</select>
+            <select data-action="setCityFirstStation">${cityOptions}</select>
           </div>
-          <select class="station" onchange="setStationId(this.value)">${stationOptions}</select>
+          <select class="station" data-action="setStationId">${stationOptions}</select>
         </div>
-        ${state.liveMode ? `<button type="button" class="locate-btn" onclick="manualLocate()" ${state.locatingGps?'disabled':''}>${icon(state.locatingGps?'loader':'pin',12,'var(--dash-muted)')} ${state.locatingGps ? T_.locating : (state.locatedViaGps ? T_.gps_located : T_.use_my_location)}</button>` : ""}
+        ${state.liveMode ? `<button type="button" class="locate-btn" data-action="manualLocate" ${state.locatingGps?'disabled':''}>${icon(state.locatingGps?'loader':'pin',12,'var(--dash-muted)')} ${state.locatingGps ? T_.locating : (state.locatedViaGps ? T_.gps_located : T_.use_my_location)}</button>` : ""}
         <div class="tabular aqi-num" style="color:${level.color};font-size:${cur.sepaCategory?'clamp(28px,8vw,40px)':'clamp(44px,12vw,84px)'};">${headline}</div>
         <div class="aqi-cat" style="color:${level.color}">${cur.sepaCategory ? (cur.recordedAt ? `${T_.last_updated} ${formatStationTime(cur.recordedAt)}` : T_.aqi) : `${T_["cat_"+level.key]} · ${T_.aqi}`}</div>
         <p class="advisory">${T_["advisory_"+level.key]}</p>
@@ -810,11 +870,11 @@ function renderHome(){
   </div>
   <div class="wrap grid2">
     <div>
-      <button class="sectionhead" onclick="setView('news')">${icon('newspaper',16,'var(--accent)')}<span class="txt serif">${T_.news_title}</span></button>
+      <button class="sectionhead" data-action="setView" data-arg="news">${icon('newspaper',16,'var(--accent)')}<span class="txt serif">${T_.news_title}</span></button>
       ${newsPreview}
     </div>
     <div>
-      <button class="sectionhead" onclick="setView('education')">${icon('book',16,'var(--accent)')}<span class="txt serif">${T_.edu_title}</span></button>
+      <button class="sectionhead" data-action="setView" data-arg="education">${icon('book',16,'var(--accent)')}<span class="txt serif">${T_.edu_title}</span></button>
       ${eduPreview}
       ${newsletterBox()}
     </div>
@@ -841,7 +901,7 @@ function articleRow(a, compact){
     <div class="serif article-title ${compact?'compact':'full'}">${srSafe(a.title_sr)}</div>
     <div class="article-excerpt">${srSafe(a.excerpt_sr)}</div>
     ${compact ? "" : `
-      <button class="readmore" onclick="toggleArticle('${a.id}')">${expanded ? T_.collapse : T_.read_more}</button>
+      <button class="readmore" data-action="toggleArticle" data-arg="${a.id}">${expanded ? T_.collapse : T_.read_more}</button>
       ${expanded ? `<p class="article-body">${srSafe(a.body_sr)}</p>${galleryHtml}` : ""}
     `}
   </div>`;
@@ -855,7 +915,7 @@ function newsletterBox(){
   return `
   <div class="newsletter-box">
     <div class="t">${T_.newsletter_title}</div>
-    <form onsubmit="subscribeNewsletter(event)" style="display:flex;gap:8px;flex-wrap:wrap;">
+    <form data-action="subscribeNewsletter" style="display:flex;gap:8px;flex-wrap:wrap;">
       <input id="newsletter-email" class="field" type="email" placeholder="${T_.newsletter_ph}" required style="flex:1;min-width:160px;">
       <button type="submit" class="btn btn-accent">${T_.newsletter_btn}</button>
     </form>
@@ -877,7 +937,7 @@ function renderEducation(){
     const open = state.expandedTerm===p.key;
     return `
     <div class="glossary-item">
-      <button class="glossary-head" onclick="toggleTerm('${p.key}')">
+      <button class="glossary-head" data-action="toggleTerm" data-arg="${p.key}">
         <span class="n serif">${p.name}</span>
         <span class="chev ${open?'open':''}">${icon('chevron',18,'var(--accent)')}</span>
       </button>
@@ -933,20 +993,20 @@ function renderAdminLogin(){
     return `<div style="max-width:380px;margin:0 auto;padding:70px 20px;">
       <h1 class="serif" style="font-size:26px;margin-bottom:8px;">${T_.admin_login_title}</h1>
       <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">${T_.otp_sent_to} <strong>${state.pendingEmail}</strong></p>
-      <form onsubmit="verifyOtp(event)" class="form-col">
+      <form data-action="verifyOtp" class="form-col">
         <label class="label">${T_.otp_placeholder}<input id="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" style="text-align:center;font-size:20px;letter-spacing:4px;"></label>
         ${state.loginError ? `<div class="error-text">${state.loginError}</div>` : ""}
         <button type="submit" class="btn btn-ink" style="margin-top:8px;">${icon('login',14)} ${T_.verify_btn}</button>
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;">
-          <button type="button" onclick="resetAuthStep()" style="background:none;border:none;color:var(--muted);cursor:pointer;">${T_.change_email}</button>
-          <button type="button" onclick="resendOtp()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:700;">${T_.resend_code}</button>
+          <button type="button" data-action="resetAuthStep" style="background:none;border:none;color:var(--muted);cursor:pointer;">${T_.change_email}</button>
+          <button type="button" data-action="resendOtp" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:700;">${T_.resend_code}</button>
         </div>
       </form>
     </div>`;
   }
   return `<div style="max-width:380px;margin:0 auto;padding:70px 20px;">
     <h1 class="serif" style="font-size:26px;margin-bottom:20px;">${T_.admin_login_title}</h1>
-    <form onsubmit="requestOtp(event)" class="form-col">
+    <form data-action="requestOtp" class="form-col">
       <label class="label">${T_.email}
         <div style="display:flex;align-items:center;border:1px solid var(--line);border-radius:3px;padding:0 10px;">
           <input id="login-user" type="text" autocomplete="username" style="border:none;padding:9px 0;flex:1;font-size:14px;">
@@ -963,7 +1023,7 @@ function renderAdminLogin(){
 function renderAdminPanel(){
   const T_=t();
   if (!state.isAdmin){
-    return `<div class="admin-empty"><p>${T_.admin_login_title}</p><button class="btn btn-ink" style="margin:16px auto 0;" onclick="setView('admin-login')">${T_.login}</button></div>`;
+    return `<div class="admin-empty"><p>${T_.admin_login_title}</p><button class="btn btn-ink" style="margin:16px auto 0;" data-action="setView" data-arg="admin-login">${T_.login}</button></div>`;
   }
   const dataRows = STATIONS.map(s=>{
     const l = levelFor(s);
@@ -979,7 +1039,7 @@ function renderAdminPanel(){
         ${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none';">` : ""}
         <div><div class="tt">${srSafe(a.title_sr)}</div><div class="dd">${a.date}</div></div>
       </div>
-      <button class="del-btn" onclick="confirmDeleteArticle('${a.id}')">${icon('trash',16)}</button>
+      <button class="del-btn" data-action="confirmDeleteArticle" data-arg="${a.id}">${icon('trash',16)}</button>
     </div>`;
   }).join("")
     : `<p style="color:var(--muted);font-size:13px;">${T_.no_articles_yet}</p>`;
@@ -987,12 +1047,12 @@ function renderAdminPanel(){
   return `<div class="wrap-admin" style="padding-top:40px;padding-bottom:80px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
       <h1 class="serif" style="font-size:28px;">${T_.admin_panel}</h1>
-      <button class="btn btn-outline" onclick="doLogout()">${icon('logout',14)} ${T_.logout}</button>
+      <button class="btn btn-outline" data-action="doLogout">${icon('logout',14)} ${T_.logout}</button>
     </div>
     <div class="admin-grid">
       <div>
         <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon('plus',15,'var(--accent)')} ${T_.add_article}</h2>
-        <form onsubmit="publishArticle(event)" class="form-col">
+        <form data-action="publishArticle" class="form-col">
           <input id="new-title" class="field" placeholder="${T_.article_title}" ${state.publishing?"disabled":""}>
           <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}" ${state.publishing?"disabled":""}>
           <textarea id="new-body" class="field" rows="5" placeholder="${T_.article_body}" ${state.publishing?"disabled":""}></textarea>
