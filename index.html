@@ -33,10 +33,11 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
     --danger:#B83C30;
     --radius:12px; --radius-sm:8px;
     --shadow:0 1px 2px rgba(19,32,41,.05),0 6px 20px rgba(19,32,41,.06);
-    /* Dashboard panel: always a dark surface in every theme */
-    --dash-muted:#93A3A6; --dash-advisory:#C7D1D3;
-    --dash-border:#33454B; --dash-border2:#26363C; --scrollbar-thumb:#3A4A50;
-    --surface-dark:#132029; --on-dark:#ECEDE8;
+    /* Dashboard panel follows the page theme */
+    --dash-muted:var(--muted); --dash-advisory:var(--text2);
+    --dash-border:var(--line-strong); --dash-border2:var(--line);
+    /* AQI severity colors: darker on light surfaces, lighter on dark ones */
+    --aq-good:#2E7D4F; --aq-moderate:#8A6A00; --aq-usg:#B35A0E; --aq-vunhealthy:#8E3590; --aq-hazardous:#A82D55; --on-aq:#FFFFFF;
   }
   :root[data-theme="dark"]{
     color-scheme:dark;
@@ -45,6 +46,7 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
     --muted:#9DB0B5; --muted2:#A3B6AB; --text2:#C6D1D4;
     --accent:#5FA8BA; --accent-soft:rgba(95,168,186,.14); --on-accent:#0E1418;
     --danger:#E0685A;
+    --aq-good:#5DB37E; --aq-moderate:#D4A62A; --aq-usg:#E8913F; --aq-vunhealthy:#C26BC4; --aq-hazardous:#D4527F; --on-aq:#0E1418;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
   }
   @media (prefers-color-scheme: dark){
@@ -55,12 +57,15 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
       --muted:#9DB0B5; --muted2:#A3B6AB; --text2:#C6D1D4;
       --accent:#5FA8BA; --accent-soft:rgba(95,168,186,.14); --on-accent:#0E1418;
       --danger:#E0685A;
+      --aq-good:#5DB37E; --aq-moderate:#D4A62A; --aq-usg:#E8913F; --aq-vunhealthy:#C26BC4; --aq-hazardous:#D4527F; --on-aq:#0E1418;
       --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
     }
   }
-  *{box-sizing:border-box;}
-  html{-webkit-text-size-adjust:100%;}
-  html,body{margin:0;padding:0;overflow-x:hidden;max-width:100%;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;scrollbar-gutter:stable;}
+  html,body{margin:0;padding:0;max-width:100%;}
+  html{overflow-x:hidden;}
+  @supports (overflow-x:clip){html{overflow-x:clip;}}
   img{max-width:100%;}
   body{font-family:'PT Sans',Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;transition:background-color .2s ease,color .2s ease;}
   h1,h2,h3{text-wrap:balance;}
@@ -73,7 +78,7 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
   .tabular{font-variant-numeric:tabular-nums;}
   button, input, textarea, select{font-family:inherit;}
   a{color:inherit;}
-  button, .brand, nav.tabs button, .langbox button, .iconbtn, .other-stations button, .glossary-head, .readmore, .adminbtn, .btn, .del-btn, .sectionhead{transition:color .15s ease,background-color .15s ease,border-color .15s ease,opacity .15s ease;}
+  button, .brand, nav.tabs button, .langbox button, .iconbtn, .glossary-head, .readmore, .adminbtn, .btn, .del-btn, .sectionhead{transition:color .15s ease,background-color .15s ease,border-color .15s ease,opacity .15s ease;}
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
   @media(prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
@@ -106,8 +111,8 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
   .topbar-inner{padding:18px 20px 16px;padding-top:calc(18px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
   .brand{display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;padding:0;}
   .brand-logo{display:block;width:36px;height:36px;}
-  :root[data-theme="dark"] .brand-logo{filter:invert(1) hue-rotate(180deg);}
-  @media (prefers-color-scheme: dark){:root[data-theme="system"] .brand-logo{filter:invert(1) hue-rotate(180deg);}}
+  :root[data-theme="dark"] .brand-logo{filter:invert(1);}
+  @media (prefers-color-scheme: dark){:root[data-theme="system"] .brand-logo{filter:invert(1);}}
   .brand-name{font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.01em;}
   .navgroup{display:flex;align-items:center;gap:16px;font-size:14px;flex-wrap:wrap;}
   nav.tabs{display:flex;gap:4px;}
@@ -123,13 +128,13 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
   .home-left{position:sticky;top:92px;min-width:0;}
   .home-right{min-width:0;display:flex;flex-direction:column;gap:40px;}
   .home-right .sectionhead{margin-bottom:6px;}
-  .dash{background:var(--surface-dark);color:var(--on-dark);border-radius:18px;border:1px solid var(--dash-border2);box-shadow:var(--shadow);color-scheme:dark;--danger:#E0685A;overflow:hidden;}
+  .dash{background:var(--surface);color:var(--ink);border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden;}
   .dash-inner{padding:28px 28px 22px;display:flex;flex-direction:column;gap:24px;}
   .dash-selects{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
-  .dash-selects select{background:transparent;color:var(--on-dark);border:none;font-size:15px;font-weight:700;cursor:pointer;}
-  .dash-selects select.station{color:var(--dash-advisory);border:1px solid var(--dash-border);border-radius:var(--radius-sm);font-size:13px;padding:4px 8px;}
-  .dash-selects select option{background:var(--surface-dark);color:var(--on-dark);}
-  .dash select:focus-visible{outline:2px solid var(--dash-advisory);outline-offset:2px;}
+  .dash-selects select{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer;padding:9px 12px;min-height:42px;max-width:100%;}
+  .dash-selects select.station{font-weight:400;font-size:14px;color:var(--text2);}
+  .dash-selects select option{background:var(--surface);color:var(--ink);}
+  .dash select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
   .aqi-num{font-size:clamp(44px,12vw,72px);font-weight:700;line-height:1;}
   .aqi-cat{font-size:15px;font-weight:700;margin-top:6px;}
   .scale{display:flex;gap:3px;margin-top:16px;max-width:380px;align-items:center;}
@@ -137,17 +142,10 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
   .scale .seg.on{opacity:1;height:9px;}
   .advisory{max-width:380px;font-size:14px;line-height:1.5;color:var(--dash-advisory);margin-top:12px;}
   .pollutant-row{display:flex;gap:8px;margin-top:18px;font-size:13px;flex-wrap:wrap;}
-  .pollutant-row>div{padding:7px 12px;border:1px solid var(--dash-border);border-radius:var(--radius-sm);background:rgba(255,255,255,.03);}
+  .pollutant-row>div{padding:7px 12px;border:1px solid var(--dash-border);border-radius:var(--radius-sm);background:var(--paper);}
   .live-badge{margin-top:18px;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);border:1px solid var(--dash-border);border-radius:999px;padding:4px 10px;}
   .locate-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);background:none;border:1px solid var(--dash-border);border-radius:999px;padding:4px 10px;cursor:pointer;margin:-2px 0 8px;font-family:inherit;}
   .locate-btn:disabled{opacity:.6;cursor:default;}
-  .other-stations{width:100%;max-height:260px;overflow-y:auto;padding:16px 8px 0 0;position:relative;border-top:1px solid var(--dash-border2);}
-  .scroll-fade{position:sticky;bottom:0;left:0;right:0;height:22px;margin-top:-22px;background:linear-gradient(to bottom, rgba(19,32,41,0), var(--surface-dark));pointer-events:none;}
-  .other-stations .oh{font-size:12px;letter-spacing:.3px;color:var(--dash-muted);margin-bottom:10px;}
-  .other-stations .cityhead{font-size:12px;font-weight:700;color:var(--dash-muted);margin:12px 0 4px;}
-  .other-stations button{display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;border-radius:6px;padding:7px 8px;cursor:pointer;color:var(--on-dark);width:100%;text-align:left;}
-  .other-stations button span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .other-stations button span:last-child{font-weight:700;flex-shrink:0;}
     @media(max-width:860px){.home-layout{grid-template-columns:1fr;gap:32px;} .home-left{position:static;}}
   .sectionhead{display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:0;margin-bottom:16px;}
   .sectionhead span.txt{font-size:21px;font-weight:700;color:var(--ink);letter-spacing:-.005em;}
@@ -234,8 +232,6 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
   /* Desktop-only polish: hover states (ignored on touch) */
   @media(hover:hover){
     nav.tabs button:hover{color:var(--ink);}
-    .other-stations button:hover{background:rgba(255,255,255,.06);}
-    .other-stations button:hover span:first-child{color:#fff;}
     .home-resource-link:hover{border-color:var(--accent);box-shadow:var(--shadow);}
     .iconbtn:hover,.adminbtn:hover,.btn-outline:hover,.resource-filter button:hover{background:var(--surface-2);}
     .glossary-head:hover .n{color:var(--accent);}
@@ -247,20 +243,14 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
     .industrial-item .name:hover, .manage-row .tt:hover{color:var(--accent);}
   }
 
-  /* Custom thin scrollbar for the dark station list panel */
-  .other-stations{scrollbar-width:thin;scrollbar-color:var(--scrollbar-thumb) transparent;}
-  .other-stations::-webkit-scrollbar{width:6px;}
-  .other-stations::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:3px;}
-  .other-stations::-webkit-scrollbar-track{background:transparent;}
 
   /* Mobile header: brand full-width on its own row, nav+lang+admin
      as one non-wrapping row below (tabs scroll horizontally rather
      than the admin button orphaning onto its own line). */
   @media(max-width:600px){
     .topbar-inner{flex-direction:column;align-items:stretch;}
-    .navgroup{width:100%;flex-wrap:nowrap;justify-content:space-between;gap:10px;}
-    nav.tabs{flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-    nav.tabs::-webkit-scrollbar{display:none;}
+    .navgroup{width:100%;flex-wrap:wrap;justify-content:space-between;gap:8px 10px;}
+    nav.tabs{flex:1 1 100%;min-width:0;flex-wrap:wrap;overflow:visible;}
   }
 
   /* Mobile: bigger tap targets, tighter spacing */
@@ -283,7 +273,52 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
     .btn{padding:11px 18px;}
     .readmore{padding:12px 0 0;}
     .del-btn{padding:8px;}
-    .other-stations button{padding:10px 8px;}
+  }
+
+  /* ---- Admin section tabs ---- */
+  .admin-tabs{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--line);margin-bottom:28px;}
+  .admin-tabs::-webkit-scrollbar{display:none;}
+  .admin-tabs button{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:11px 14px;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap;min-height:44px;}
+  .admin-tabs button.active{color:var(--ink);font-weight:700;border-bottom-color:var(--accent);}
+  .resource-admin-row{flex-wrap:wrap;}
+  .resource-admin-row>div:first-child{flex:1 1 220px;min-width:0;overflow-wrap:anywhere;}
+  .resource-admin-actions{flex-wrap:wrap;}
+  .faq-pos{color:var(--muted2);font-weight:700;margin-right:4px;font-variant-numeric:tabular-nums;}
+  .move-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--radius-sm);cursor:pointer;}
+  .move-btn:disabled{opacity:.3;cursor:default;}
+
+  /* ---- Public FAQ accordion ---- */
+  .faq-item{border-bottom:1px solid var(--line);}
+  .faq-list{border-top:1px solid var(--line);}
+  .faq-q{width:100%;display:flex;justify-content:space-between;align-items:center;gap:14px;background:none;border:none;cursor:pointer;padding:16px 0;text-align:left;color:var(--ink);min-height:48px;}
+  .faq-q .q{font-family:'PT Serif',Georgia,serif;font-size:18px;font-weight:700;line-height:1.3;}
+  .faq-q .chev{display:inline-flex;flex-shrink:0;}
+  .faq-a{padding:0 0 12px;font-size:14.5px;line-height:1.65;color:var(--text2);white-space:pre-wrap;overflow-wrap:anywhere;}
+
+  /* ---- Make clickable things look clickable ---- */
+  [tabindex="-1"]:focus{outline:none;}
+  a,button,select,label,[data-action]{touch-action:manipulation;}
+  .home-resource-link{position:relative;padding-right:52px;}
+  .home-resource-link::after{content:"\2192";position:absolute;right:20px;top:18px;font-size:20px;font-weight:700;line-height:1;color:var(--accent);}
+  .home-resource-link.viber::after{content:"\2197";}
+  .sectionhead::after{content:"\2192";font-size:19px;font-weight:700;line-height:1;color:var(--accent);margin-left:2px;}
+  .readmore,.resource-content-toggle{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;}
+  .legal a{color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:3px;}
+  /* Pressed feedback on touch screens (replaces the browser's blue tap overlay) */
+  @media(hover:none){
+    .home-resource-link:active{background:var(--accent-soft);border-color:var(--accent);}
+    .btn:active{opacity:.75;}
+    nav.tabs button:active,.admin-tabs button:active,.langbox button:active,.faq-q:active,.glossary-head:active{background:var(--accent-soft);}
+    .sectionhead:active,.readmore:active,.resource-content-toggle:active,.foot a:active,.foot button:active{opacity:.6;}
+    .iconbtn:active,.adminbtn:active,.move-btn:active{background:var(--surface-2);}
+  }
+  @media(hover:hover){
+    .admin-tabs button:hover{color:var(--ink);}
+    .faq-q:hover .q{color:var(--accent);}
+  }
+  @media(max-width:480px){
+    .dash-selects select{font-size:16px;}
+    .faq-q .q{font-size:17px;}
   }
 </style>
 </head>
@@ -315,6 +350,8 @@ function icon(name, size, color){
     login: `<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>`,
     logout: `<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>`,
     plus: `<path d="M12 5v14M5 12h14"/>`,
+    arrowup: `<path d="M12 19V5M5 12l7-7 7 7"/>`,
+    arrowdown: `<path d="M12 5v14M19 12l-7 7-7-7"/>`,
     trash: `<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>`,
     chevron: `<path d="m6 9 6 6 6-6"/>`,
     external: `<path d="M15 3h6v6M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>`,
@@ -468,9 +505,9 @@ function srSafe(str){ return escapeHtml(srDisplay(str)); }
 // the exact conditions this app gets used in. Kept intentionally terse
 // since it sits inline next to numbers in tight list rows and table cells.
 const AQI_LEVELS = [
-  {max:50,key:"good",color:"#4C9A6A",code:"D"},{max:100,key:"moderate",color:"#B98F1E",code:"U"},
-  {max:150,key:"usg",color:"#D97B29",code:"NO"},{max:200,key:"unhealthy",color:"var(--danger)",code:"N"},
-  {max:300,key:"vunhealthy",color:"#A24CA4",code:"VN"},{max:9999,key:"hazardous",color:"#B83A63",code:"OP"},
+  {max:50,key:"good",color:"var(--aq-good)",code:"D"},{max:100,key:"moderate",color:"var(--aq-moderate)",code:"U"},
+  {max:150,key:"usg",color:"var(--aq-usg)",code:"NO"},{max:200,key:"unhealthy",color:"var(--danger)",code:"N"},
+  {max:300,key:"vunhealthy",color:"var(--aq-vunhealthy)",code:"VN"},{max:9999,key:"hazardous",color:"var(--aq-hazardous)",code:"OP"},
 ];
 // Maps TraceTheToxin's real SEPA-style station categories to our own
 // good/moderate/.../hazardous keys (by severity rank) — used only to pick
@@ -500,7 +537,7 @@ function levelForKey(key){ return AQI_LEVELS.find(l=>l.key===key) || AQI_LEVELS[
 // Small colored+lettered chip so severity reads without relying on color
 // alone (colorblind users; bright outdoor sun washing out hue differences).
 function levelChip(l, label){
-  return `<span aria-hidden="true" title="${label}" style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:16px;padding:0 4px;border-radius:3px;background:${l.color};color:#fff;font-size:9px;font-weight:700;letter-spacing:.2px;flex-shrink:0;">${l.code}</span>`;
+  return `<span aria-hidden="true" title="${label}" style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:16px;padding:0 4px;border-radius:3px;background:${l.color};color:var(--on-aq);font-size:9px;font-weight:700;letter-spacing:.2px;flex-shrink:0;">${l.code}</span>`;
 }
 // Demo stations use a numeric 0-500 style AQI; live TraceTheToxin stations
 // carry a SEPA category string instead (no numeric score). This handles both.
@@ -631,7 +668,7 @@ async function storageSet(key, value, shared){
 const state = {
   lang:"sr-latn", view:"home", stationId:"ns-liman",
   theme:(document.documentElement.getAttribute("data-theme")||"light"),
-  isAdmin:false, loginError:"", currentUser:null, authStep:"request", pendingEmail:"",
+  isAdmin:false, adminTab:"news", loginError:"", currentUser:null, authStep:"request", pendingEmail:"",
   articles: SEED_ARTICLES.slice(),
   articlesLoadError:null,
   resources:[], resourcesLoadError:null, resourcesLoading:true, resourceSaving:false, resourceError:"", resourceSearch:"", resourceFilter:"all", expandedResource:null, focusResource:null, resourceForm:null, copiedLink:null,
@@ -833,8 +870,16 @@ function rowToResource(row){
     item_date:row.item_date||null, sort_order:row.sort_order||0,
   };
 }
-function emptyResourceForm(){
-  return {id:null, type:"document", title:"", summary:"", body:"", url:"", itemDate:"", isPublic:false, attachments:[], removed:[]};
+function emptyResourceForm(type){
+  const tp = type || (RESOURCE_TYPES.some(x=>x.id===state.adminTab) ? state.adminTab : "document");
+  return {id:null, type:tp, title:"", summary:"", body:"", url:"", itemDate:"", isPublic:tp==="faq", attachments:[], removed:[]};
+}
+// Same order the database query uses: manual priority first, newest first within ties.
+function sortResources(){
+  state.resources.sort((a,b)=>((a.sort_order||0)-(b.sort_order||0)) || String(b.created_at||"").localeCompare(String(a.created_at||"")));
+}
+function nextSortOrder(type){
+  return Math.max(-1,...state.resources.filter(r=>r.type===type).map(r=>r.sort_order||0))+1;
 }
 function getResourceForm(){ if(!state.resourceForm) state.resourceForm=emptyResourceForm(); return state.resourceForm; }
 // Copies whatever is currently typed in the admin form into state, so a
@@ -842,9 +887,12 @@ function getResourceForm(){ if(!state.resourceForm) state.resourceForm=emptyReso
 function readResourceForm(){
   const f=getResourceForm(); const g=id=>document.getElementById(id);
   if(g("resource-title")){
-    f.type=g("resource-type").value; f.title=g("resource-title").value; f.summary=g("resource-summary").value;
-    f.body=g("resource-body").value; f.url=g("resource-url").value; f.itemDate=g("resource-date").value;
-    f.isPublic=g("resource-public").checked;
+    f.title=g("resource-title").value;
+    if(g("resource-summary")) f.summary=g("resource-summary").value;
+    if(g("resource-body")) f.body=g("resource-body").value;
+    if(g("resource-url")) f.url=g("resource-url").value;
+    if(g("resource-date")) f.itemDate=g("resource-date").value;
+    if(g("resource-public")) f.isPublic=g("resource-public").checked;
   }
   return f;
 }
@@ -855,6 +903,7 @@ async function loadResourcesFromSupabase(){
   const {data,error}=await contentTable().select("*").order("sort_order",{ascending:true}).order("created_at",{ascending:false});
   if(error) throw error;
   state.resources=(data||[]).map(rowToResource);
+  sortResources();
   state.resourcesLoadError=null;
 }
 async function refreshResources(){
@@ -868,7 +917,10 @@ function safeFileName(name){ return String(name||"file").normalize("NFKD").repla
 function startEditResource(id){
   if(!state.isAdmin) return;
   const r=state.resources.find(x=>String(x.id)===String(id)); if(!r) return;
-  state.resourceForm={id:r.id, type:r.type, title:r.title, summary:r.summary, body:r.body, url:r.external_url, itemDate:r.item_date||"",
+  const isFaq=r.type==="faq";
+  state.adminTab=r.type;
+  // FAQ has just a question and an answer: fold any old "short description" into the answer.
+  state.resourceForm={id:r.id, type:r.type, title:r.title, summary:isFaq?"":r.summary, body:isFaq?[r.summary,r.body].filter(Boolean).join("\n\n"):r.body, url:r.external_url, itemDate:r.item_date||"",
     isPublic:r.is_public, attachments:r.attachments.slice(), removed:[]};
   state.resourceError=""; render();
   const form=document.getElementById("resource-form"); if(form) form.scrollIntoView({behavior:"smooth",block:"start"});
@@ -883,11 +935,13 @@ async function saveResource(e){
   e.preventDefault();
   if(!state.isAdmin||!state.currentUser) return;
   const f=readResourceForm();
+  if(RESOURCE_TYPES.some(x=>x.id===state.adminTab)) f.type=state.adminTab;
   const title=f.title.trim(), summary=f.summary.trim(), body=f.body.trim(), externalRaw=f.url.trim();
   const externalUrl=externalRaw?safeExternalUrl(externalRaw):null;
   const fileInput=document.getElementById("resource-file");
   const files=fileInput&&fileInput.files?[...fileInput.files]:[];
-  if(!title){state.resourceError=srDisplay("Unesite naslov.");render();return;}
+  if(!title){state.resourceError=srDisplay(f.type==="faq"?"Unesite pitanje.":"Unesite naslov.");render();return;}
+  if(f.type==="faq"&&!body&&!summary){state.resourceError=srDisplay("Unesite odgovor.");render();return;}
   if(externalRaw&&!externalUrl){state.resourceError=srDisplay("Link mora počinjati sa http:// ili https://.");render();return;}
   if(files.some(x=>x.size>20*1024*1024)){state.resourceError=srDisplay("Svaki prilog mora biti manji od 20 MB.");render();return;}
   state.resourceSaving=true; state.resourceError=""; render();
@@ -905,12 +959,13 @@ async function saveResource(e){
       external_url:externalUrl, item_date:f.itemDate||null, attachments:[...f.attachments,...uploaded], published:f.isPublic};
     let res;
     if(f.id){ res=await contentTable().update(row).eq("id",f.id).select("*").single(); }
-    else { res=await contentTable().insert({...row,id,created_by:state.currentUser.id}).select("*").single(); }
+    else { res=await contentTable().insert({...row,id,created_by:state.currentUser.id,...(f.type==="faq"?{sort_order:nextSortOrder("faq")}:{})}).select("*").single(); }
     if(res.error) throw res.error;
     // Only after the database accepted the change, drop attachments the admin removed.
     if(f.removed.length){ try{ await client.storage.from("azv-docs").remove(f.removed.map(a=>a.path)); }catch(_){ console.warn("Attachment cleanup failed"); } }
     const item=rowToResource(res.data);
     state.resources = f.id ? state.resources.map(x=>x.id===item.id?item:x) : [item,...state.resources];
+    sortResources();
     state.resourceForm=emptyResourceForm();
   }catch(err){
     if(uploaded.length){ try{ await client.storage.from("azv-docs").remove(uploaded.map(a=>a.path)); }catch(_){} }
@@ -949,6 +1004,31 @@ async function toggleResourceVisibility(id){
     state.resources=state.resources.map(x=>x.id===item.id?item:x);
   }catch(err){ state.resourceError=(err&&err.message)||String(err); }
   render();
+}
+function setAdminTab(tab){
+  state.adminTab=tab; state.resourceForm=null; state.resourceError=""; state.publishError=""; state.deleteError="";
+  render();
+}
+// arg is "<item id>|up" or "<item id>|down". Positions of the whole FAQ list are renumbered 0..n-1.
+async function moveFaq(arg){
+  if(!state.isAdmin) return;
+  const [id,dir]=String(arg).split("|");
+  const faq=state.resources.filter(r=>r.type==="faq");
+  const i=faq.findIndex(r=>String(r.id)===id);
+  const j=dir==="up"?i-1:i+1;
+  if(i<0||j<0||j>=faq.length) return;
+  const previous=state.resources;
+  const next=faq.slice(); [next[i],next[j]]=[next[j],next[i]];
+  const pos=new Map(next.map((r,k)=>[r.id,k]));
+  const changed=next.filter((r,k)=>(r.sort_order||0)!==k);
+  state.resources=previous.map(r=>pos.has(r.id)?{...r,sort_order:pos.get(r.id)}:r);
+  sortResources(); state.resourceError=""; render();
+  try{
+    const results=await Promise.all(changed.map(r=>contentTable().update({sort_order:pos.get(r.id)}).eq("id",r.id)));
+    const bad=results.find(x=>x&&x.error); if(bad) throw bad.error;
+  }catch(err){
+    state.resources=previous; state.resourceError=(err&&err.message)||String(err); render();
+  }
 }
 async function deleteResource(id){
   if(!state.isAdmin) return;
@@ -1079,6 +1159,7 @@ const ACTIONS = {
   doLogout, verifyOtp, requestOtp, publishArticle,
   setResourceFilter, searchResources, toggleResource, saveResource, downloadResource, toggleResourceVisibility, deleteResource,
   startEditResource, cancelEditResource, removeFormAttachment, copyLink,
+  setAdminTab, moveFaq,
 };
 function initEventDelegation(){
   const app = document.getElementById("app");
@@ -1145,17 +1226,6 @@ function renderHome(){
   const cityOptions = cities.map(c=>`<option value="${c}" ${c===(cur.city||T_.city_unknown)?'selected':''}>${c}</option>`).join("");
   const stationOptions = STATIONS.filter(s=>(s.city||T_.city_unknown)===(cur.city||T_.city_unknown)).map(s=>`<option value="${s.id}" ${s.id===state.stationId?'selected':''}>${s.name}</option>`).join("");
 
-  const otherStations = cities.map(cityName=>{
-    const rows = STATIONS.filter(s=>(s.city||T_.city_unknown)===cityName && s.id!==state.stationId).map(s=>{
-      const l = levelFor(s);
-      const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
-      const catLabel = T_["cat_"+l.key];
-      return `<button data-action="setStationId" data-arg="${s.id}"><span>${s.name}</span><span class="tabular" style="display:inline-flex;align-items:center;gap:6px;color:${l.color}">${levelChip(l,catLabel)}${badge}</span></button>`;
-    }).join("");
-    if (!rows) return "";
-    return `<div><div class="cityhead">${cityName}</div>${rows}</div>`;
-  }).join("");
-
   const newsPreview = state.articles.slice(0,3).map(a=>articleRow(a,true)).join("");
   const eduPreview = POLLUTANTS.slice(0,4).map(p=>`
     <div class="pollutant-mini"><div class="n">${p.name}</div><div class="d">${srDisplay(p.def_sr)}</div></div>
@@ -1179,9 +1249,9 @@ function renderHome(){
         <div class="dash-selects">
           <div style="display:flex;align-items:center;gap:6px;">
             ${icon('pin',15,'var(--accent)')}
-            <select data-action="setCityFirstStation">${cityOptions}</select>
+            <select data-action="setCityFirstStation" aria-label="${srDisplay("Grad")}">${cityOptions}</select>
           </div>
-          <select class="station" data-action="setStationId">${stationOptions}</select>
+          <select class="station" data-action="setStationId" aria-label="${T_.station}">${stationOptions}</select>
         </div>
         ${state.liveMode ? `<button type="button" class="locate-btn" data-action="manualLocate" ${state.locatingGps?'disabled':''}>${icon(state.locatingGps?'loader':'pin',12,'var(--dash-muted)')} ${state.locatingGps ? T_.locating : (state.locatedViaGps ? T_.gps_located : T_.use_my_location)}</button>` : ""}
         <div class="tabular aqi-num" style="color:${level.color};font-size:${cur.sepaCategory?'clamp(28px,8vw,40px)':'clamp(44px,12vw,84px)'};">${headline}</div>
@@ -1195,11 +1265,6 @@ function renderHome(){
         </div>
         <div class="live-badge">${icon(state.loadingLive?'loader':'radio',12)} ${state.loadingLive ? "" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
         ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:var(--dash-muted);margin-top:4px;max-width:380px;">${T_.live_error_public}</div>` : ""}
-      </div>
-      <div class="other-stations">
-        <div class="oh">${T_.other_stations}</div>
-        ${otherStations}
-        <div class="scroll-fade" aria-hidden="true"></div>
       </div>
     </div>
   </div>
@@ -1359,6 +1424,15 @@ function renderResources(){
     ${state.resourcesLoading?`<div class="resource-empty">${srDisplay("Učitavanje sadržaja…")}</div>`:filtered.length?filtered.map(r=>renderResourceCard(r)).join(""):`<div class="resource-empty">${state.resourcesLoadError?srDisplay("Sadržaj trenutno nije dostupan. Proverite podešavanje baze."):srDisplay("Nema javno objavljenih stavki u ovoj kategoriji. Sadržaj će se pojaviti kada ga administratori objave.")}</div>`}
   </div>`;
 }
+function renderFaqItem(r){
+  const open=state.expandedResource===r.id;
+  const answer=[r.summary,r.body].filter(Boolean).map(srSafe).join("\n\n");
+  const shareArg=`faq/${encodeURIComponent(r.id)}`;
+  return `<div class="faq-item">
+    <button type="button" class="faq-q" aria-expanded="${open}" data-action="toggleResource" data-arg="${escapeHtml(r.id)}"><span class="q">${srSafe(r.title)}</span><span class="chev${open?" open":""}">${icon('chevron',18,'var(--muted)')}</span></button>
+    ${open?`<div class="faq-a">${answer}</div><button type="button" class="resource-content-toggle" data-action="copyLink" data-arg="${escapeHtml(shareArg)}" style="margin-bottom:14px;">${state.copiedLink===shareArg?srDisplay("Link kopiran"):srDisplay("Kopiraj link")}</button>`:""}
+  </div>`;
+}
 function renderFaq(){
   const rows=(state.resources||[]).filter(r=>r.is_public===true&&r.type==="faq");
   const q=(state.resourceSearch||"").toLocaleLowerCase("sr");
@@ -1367,7 +1441,7 @@ function renderFaq(){
     <h1 class="serif" style="font-size:32px;margin:0 0 9px;">${srDisplay("Česta pitanja (FAQ)")}</h1>
     <p class="resource-intro">${srDisplay("Odgovori na pitanja o kvalitetu vazduha, izvorima podataka, uticaju zagađenja i aktivnostima inicijative.")}</p>
     <form data-action="searchResources" class="resource-tools"><input id="resource-search" class="field" style="flex:1;min-width:190px;" value="${escapeHtml(state.resourceSearch)}" placeholder="${srDisplay("Pretraži pitanja i odgovore…")}"><button class="btn btn-ink" type="submit">${srDisplay("Pretraži")}</button></form>
-    ${state.resourcesLoading?`<div class="resource-empty">${srDisplay("Učitavanje sadržaja…")}</div>`:filtered.length?filtered.map(r=>renderResourceCard(r,true)).join(""):`<div class="resource-empty">${state.resourcesLoadError?srDisplay("FAQ sadržaj trenutno nije dostupan. Proverite podešavanje baze."):srDisplay("FAQ je spreman za sadržaj. Administratori mogu dodavati pitanja i odgovore u administratorskoj tabli, a zatim označiti da li su javni.")}</div>`}
+    ${state.resourcesLoading?`<div class="resource-empty">${srDisplay("Učitavanje sadržaja…")}</div>`:filtered.length?`<div class="faq-list">${filtered.map(renderFaqItem).join("")}</div>`:`<div class="resource-empty">${state.resourcesLoadError?srDisplay("FAQ sadržaj trenutno nije dostupan. Proverite podešavanje baze."):srDisplay("FAQ je spreman za sadržaj. Administratori mogu dodavati pitanja i odgovore u administratorskoj tabli, a zatim označiti da li su javni.")}</div>`}
   </div>`;
 }
 
@@ -1496,67 +1570,117 @@ function renderAdminLogin(){
   </div>`;
 }
 
-function renderAdminPanel(){
+function renderAdminNews(){
   const T_=t();
-  if (!state.isAdmin){
-    return `<div class="admin-empty"><p>${T_.admin_login_title}</p><button class="btn btn-ink" style="margin:16px auto 0;" data-action="setView" data-arg="admin-login">${T_.login}</button></div>`;
-  }
+  const newsRows = state.articles.length ? state.articles.map(a=>{
+    const thumbUrl = articleCoverUrl(a);
+    return `<div class="manage-row"><div style="display:flex;align-items:center;gap:10px;">${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none';">` : ""}<div><div class="tt">${srSafe(a.title_sr)}</div><div class="dd">${a.date}</div></div></div><button class="del-btn" aria-label="Obriši vest" data-action="confirmDeleteArticle" data-arg="${a.id}">${icon('trash',16)}</button></div>`;
+  }).join("") : `<p style="color:var(--muted);font-size:13px;">${T_.no_articles_yet}</p>`;
+  return `<div class="admin-grid">
+    <div>
+      <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon('plus',15,'var(--accent)')} ${T_.add_article}</h2>
+      <form data-action="publishArticle" class="form-col">
+        <input id="new-title" class="field" placeholder="${T_.article_title}" ${state.publishing?"disabled":""}>
+        <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}" ${state.publishing?"disabled":""}>
+        <textarea id="new-body" class="field" rows="5" placeholder="${T_.article_body}" ${state.publishing?"disabled":""}></textarea>
+        <label class="label">${T_.article_photo}<input id="new-photo" type="file" accept="image/*" multiple class="field" style="padding:6px 10px;" ${state.publishing?"disabled":""}></label>
+        <button type="submit" class="btn btn-accent" style="align-self:flex-start;" ${state.publishing?"disabled":""}>${state.publishing?T_.publishing:T_.publish}</button>
+        ${state.publishError?`<div class="error-text">${escapeHtml(state.publishError)}</div>`:""}${state.deleteError?`<div class="error-text">${escapeHtml(state.deleteError)}</div>`:""}
+      </form>
+    </div>
+    <div><h2 style="font-size:15px;font-weight:700;margin-bottom:12px;">${T_.manage_news}</h2>${newsRows}</div>
+  </div>`;
+}
+
+function renderAdminStations(){
+  const T_=t();
   const dataRows = STATIONS.map(s=>{
     const l = levelFor(s);
     const badge = s.sepaCategory ? sepaLabel(s.sepaCategory) : s.aqi;
     const catLabel = T_["cat_"+l.key];
     return `<tr><td>${s.city ? s.city+" — " : ""}${s.name}</td><td class="tabular" style="color:${l.color};font-weight:700;"><span style="display:inline-flex;align-items:center;gap:6px;">${levelChip(l,catLabel)}${badge}</span></td><td class="tabular">${fmtNum(s.pm25)}</td><td class="tabular">${fmtNum(s.pm10)}</td></tr>`;
   }).join("");
-  const newsRows = state.articles.length ? state.articles.map(a=>{
-    const thumbUrl = articleCoverUrl(a);
-    return `<div class="manage-row"><div style="display:flex;align-items:center;gap:10px;">${thumbUrl ? `<img src="${thumbUrl}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none';">` : ""}<div><div class="tt">${srSafe(a.title_sr)}</div><div class="dd">${a.date}</div></div></div><button class="del-btn" aria-label="Obriši vest" data-action="confirmDeleteArticle" data-arg="${a.id}">${icon('trash',16)}</button></div>`;
-  }).join("") : `<p style="color:var(--muted);font-size:13px;">${T_.no_articles_yet}</p>`;
-  const rf=getResourceForm(); const editing=!!rf.id;
-  const resourceRows=state.resources.length?state.resources.map(r=>`<div class="resource-admin-row"><div><strong>${srSafe(r.title)}</strong><div class="meta">${resourceTypeLabel(r.type)} · ${r.is_public?srDisplay("Javno objavljeno"):srDisplay("Samo administratori")} · ${(r.item_date||r.created_at||"").slice(0,10)}${r.attachments.length?` · ${r.attachments.length} ${srDisplay("prilog(a)")}`:""}</div></div><div class="resource-admin-actions"><button class="btn btn-outline" data-action="startEditResource" data-arg="${escapeHtml(r.id)}">${srDisplay("Izmeni")}</button><button class="btn btn-outline" data-action="toggleResourceVisibility" data-arg="${escapeHtml(r.id)}">${r.is_public?srDisplay("Sakrij"):srDisplay("Objavi")}</button><button class="del-btn" aria-label="Obriši sadržaj" data-action="deleteResource" data-arg="${escapeHtml(r.id)}">${icon('trash',16)}</button></div></div>`).join(""):`<p style="font-size:13px;color:var(--muted);">${srDisplay("Još nema unetih dokumenata, FAQ stavki ili izveštaja.")}</p>`;
+  return `<div>
+    <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;">${T_.data_overview}</h2>
+    <div style="max-height:520px;overflow-y:auto;overflow-x:auto;"><table class="data"><thead><tr><th>${T_.station}</th><th>${T_.aqi}</th><th>${T_.pm25}</th><th>${T_.pm10}</th></tr></thead><tbody>${dataRows}</tbody></table></div>
+    <div style="font-size:12px;color:var(--muted2);margin-top:10px;display:flex;align-items:center;gap:6px;">${state.loadingLive?icon('loader',12,'var(--muted2)'):""} ${state.loadingLive?"":(state.liveMode?T_.live_badge:T_.demo_badge)}</div>
+    ${(!state.loadingLive&&!state.liveMode&&state.liveError)?`<div style="font-size:11px;color:var(--danger);margin-top:4px;">${T_.live_error_prefix} ${escapeHtml(state.liveError)}</div>`:""}
+  </div>`;
+}
+
+function renderAdminResources(tab){
+  const isFaq = tab==="faq";
+  if(!state.resourceForm || state.resourceForm.type!==tab) state.resourceForm=emptyResourceForm(tab);
+  const rf=state.resourceForm; const editing=!!rf.id;
+  const typeLabel=srDisplay((RESOURCE_TYPES.find(x=>x.id===tab)||{}).label||"");
+  const items=state.resources.filter(r=>r.type===tab);
+  const visibility=r=>r.is_public?srDisplay("Javno objavljeno"):srDisplay("Samo administratori");
+  const rows=items.map((r,idx)=>{
+    const meta = isFaq
+      ? visibility(r)
+      : `${visibility(r)} · ${(r.item_date||r.created_at||"").slice(0,10)}${r.attachments.length?` · ${r.attachments.length} ${srDisplay("prilog(a)")}`:""}`;
+    const moveBtns = isFaq ? `<button type="button" class="move-btn" aria-label="${srDisplay("Pomeri više")}" title="${srDisplay("Pomeri više")}" data-action="moveFaq" data-arg="${escapeHtml(r.id)}|up" ${idx===0?"disabled":""}>${icon('arrowup',16)}</button><button type="button" class="move-btn" aria-label="${srDisplay("Pomeri niže")}" title="${srDisplay("Pomeri niže")}" data-action="moveFaq" data-arg="${escapeHtml(r.id)}|down" ${idx===items.length-1?"disabled":""}>${icon('arrowdown',16)}</button>` : "";
+    return `<div class="resource-admin-row"><div>${isFaq?`<span class="faq-pos">${idx+1}.</span>`:""}<strong>${srSafe(r.title)}</strong><div class="meta">${meta}</div></div><div class="resource-admin-actions">${moveBtns}<button class="btn btn-outline" data-action="startEditResource" data-arg="${escapeHtml(r.id)}">${srDisplay("Izmeni")}</button><button class="btn btn-outline" data-action="toggleResourceVisibility" data-arg="${escapeHtml(r.id)}">${r.is_public?srDisplay("Sakrij"):srDisplay("Objavi")}</button><button class="del-btn" aria-label="${srDisplay("Obriši")}" data-action="deleteResource" data-arg="${escapeHtml(r.id)}">${icon('trash',16)}</button></div></div>`;
+  }).join("");
+  const list = state.resourcesLoading
+    ? `<p style="font-size:13px;color:var(--muted);">${srDisplay("Učitavanje…")}</p>`
+    : (rows || `<p style="font-size:13px;color:var(--muted);">${srDisplay("Još nema unetih stavki u ovoj sekciji.")}</p>`);
   const formAtts=rf.attachments.map((a,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;border:1px solid var(--line);border-radius:3px;padding:6px 10px;"><span style="overflow-wrap:anywhere;">${escapeHtml(a.name||a.path)}${a.size?` (${fmtBytes(a.size)})`:""}</span><button type="button" class="del-btn" aria-label="${srDisplay("Ukloni prilog")}" data-action="removeFormAttachment" data-arg="${i}">${icon('trash',14)}</button></div>`).join("");
-  return `<div class="wrap-admin" style="padding-top:40px;padding-bottom:80px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:28px;"><h1 class="serif" style="font-size:28px;">${T_.admin_panel}</h1><button class="btn btn-outline" data-action="doLogout">${icon('logout',14)} ${T_.logout}</button></div>
-    <div class="admin-grid">
-      <div>
-        <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon('plus',15,'var(--accent)')} ${T_.add_article}</h2>
-        <form data-action="publishArticle" class="form-col">
-          <input id="new-title" class="field" placeholder="${T_.article_title}" ${state.publishing?"disabled":""}>
-          <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}" ${state.publishing?"disabled":""}>
-          <textarea id="new-body" class="field" rows="5" placeholder="${T_.article_body}" ${state.publishing?"disabled":""}></textarea>
-          <label class="label">${T_.article_photo}<input id="new-photo" type="file" accept="image/*" multiple class="field" style="padding:6px 10px;" ${state.publishing?"disabled":""}></label>
-          <button type="submit" class="btn btn-accent" style="align-self:flex-start;" ${state.publishing?"disabled":""}>${state.publishing?T_.publishing:T_.publish}</button>
-          ${state.publishError?`<div class="error-text">${escapeHtml(state.publishError)}</div>`:""}${state.deleteError?`<div class="error-text">${escapeHtml(state.deleteError)}</div>`:""}
-        </form>
-      </div>
-      <div><h2 style="font-size:15px;font-weight:700;margin-bottom:12px;">${T_.data_overview}</h2><div style="max-height:260px;overflow-y:auto;overflow-x:auto;"><table class="data"><thead><tr><th>${T_.station}</th><th>${T_.aqi}</th><th>${T_.pm25}</th><th>${T_.pm10}</th></tr></thead><tbody>${dataRows}</tbody></table></div><div style="font-size:12px;color:var(--muted2);margin-top:10px;display:flex;align-items:center;gap:6px;">${state.loadingLive?icon('loader',12,'var(--muted2)'):""} ${state.loadingLive?"":(state.liveMode?T_.live_badge:T_.demo_badge)}</div>${(!state.loadingLive&&!state.liveMode&&state.liveError)?`<div style="font-size:11px;color:var(--danger);margin-top:4px;">${T_.live_error_prefix} ${escapeHtml(state.liveError)}</div>`:""}</div>
-    </div>
-    <div style="margin-top:44px;"><h2 style="font-size:15px;font-weight:700;margin-bottom:12px;">${T_.manage_news}</h2>${newsRows}</div>
-    <section style="margin-top:48px;border-top:1px solid var(--line);padding-top:28px;">
-      <h2 class="serif" style="font-size:25px;margin:0 0 8px;">${srDisplay("Dokumenti, FAQ i javni sadržaj")}</h2>
-      <p class="resource-intro">${srDisplay("Izaberite kategoriju, dodajte tekst ili prilog i označite javnu vidljivost. Ako polje nije čekirano, stavka se ne pojavljuje na javnom sajtu.")}</p>
-      <div class="admin-grid">
-        <div>
-          <h3 id="resource-form-title" style="font-size:15px;margin:0 0 12px;">${editing?srDisplay("Izmena sadržaja"):srDisplay("Novi sadržaj")}</h3>
-          <form id="resource-form" data-action="saveResource" class="form-col">
-            <select id="resource-type" class="field">${RESOURCE_TYPES.map(x=>`<option value="${x.id}" ${rf.type===x.id?"selected":""}>${srDisplay(x.label)}</option>`).join("")}</select>
+
+  const fields = isFaq ? `
+            <input id="resource-title" class="field" maxlength="220" placeholder="${srDisplay("Pitanje")}" value="${escapeHtml(rf.title)}" required>
+            <textarea id="resource-body" class="field" rows="8" placeholder="${srDisplay("Odgovor")}">${escapeHtml(rf.body)}</textarea>`
+  : `
             <input id="resource-title" class="field" maxlength="220" placeholder="${srDisplay("Naslov")}" value="${escapeHtml(rf.title)}" required>
-            <textarea id="resource-summary" class="field" rows="2" maxlength="600" placeholder="${srDisplay("Kratak opis / odgovor ukratko")}">${escapeHtml(rf.summary)}</textarea>
-            <textarea id="resource-body" class="field" rows="6" placeholder="${srDisplay("Tekst, detalji ili odgovor na FAQ pitanje")}">${escapeHtml(rf.body)}</textarea>
+            <textarea id="resource-summary" class="field" rows="2" maxlength="600" placeholder="${srDisplay("Kratak opis")}">${escapeHtml(rf.summary)}</textarea>
+            <textarea id="resource-body" class="field" rows="6" placeholder="${srDisplay("Tekst i detalji")}">${escapeHtml(rf.body)}</textarea>
             <input id="resource-url" class="field" type="url" placeholder="${srDisplay("Link ka izvoru (opciono, https://…)")}" value="${escapeHtml(rf.url)}">
             <label class="label">${srDisplay("Datum (opciono — ako je prazno, koristi se datum unosa)")}<input id="resource-date" type="date" value="${escapeHtml(rf.itemDate)}"></label>
             ${formAtts?`<div class="form-col" style="gap:6px;"><div class="label">${srDisplay("Postojeći prilozi")}</div>${formAtts}</div>`:""}
-            <label class="label">${editing?srDisplay("Dodaj priloge (opciono, do 20 MB po fajlu)"):srDisplay("Prilozi (opciono, do 20 MB po fajlu)")}<input id="resource-file" class="field" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.pptx,.txt,.csv,.jpg,.jpeg,.png,.webp,.zip" style="padding:6px 10px;"></label>
-            <label class="resource-public-label"><input id="resource-public" type="checkbox" ${rf.isPublic?"checked":""}><span><strong>${srDisplay("Prikaži na javnom sajtu")}</strong><br>${srDisplay("Ako nije čekirano, sadržaj ostaje vidljiv samo administratorima.")}</span></label>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button type="submit" class="btn btn-accent" ${state.resourceSaving?"disabled":""}>${state.resourceSaving?srDisplay("Čuvanje…"):(editing?srDisplay("Sačuvaj izmene"):srDisplay("Sačuvaj sadržaj"))}</button>
-              ${editing?`<button type="button" class="btn btn-outline" data-action="cancelEditResource" ${state.resourceSaving?"disabled":""}>${srDisplay("Otkaži izmenu")}</button>`:""}
-            </div>
-            ${state.resourceError?`<div class="error-text" role="alert">${escapeHtml(state.resourceError)}</div>`:""}
-          </form>
-        </div>
-        <div><h3 style="font-size:15px;margin:0 0 12px;">${srDisplay("Sačuvan sadržaj")}</h3>${state.resourcesLoading?`<p style="font-size:13px;color:var(--muted);">${srDisplay("Učitavanje…")}</p>`:resourceRows}${state.resourcesLoadError?`<p class="error-text" style="margin-top:12px;">${srDisplay("Baza sadržaja nije dostupna:")} ${escapeHtml(state.resourcesLoadError)}</p>`:""}</div>
+            <label class="label">${editing?srDisplay("Dodaj priloge (opciono, do 20 MB po fajlu)"):srDisplay("Prilozi (opciono, do 20 MB po fajlu)")}<input id="resource-file" class="field" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.pptx,.txt,.csv,.jpg,.jpeg,.png,.webp,.zip" style="padding:6px 10px;"></label>`;
+
+  const intro = isFaq
+    ? srDisplay("Unesite pitanje i odgovor. Redosled na listi desno je redosled na javnoj stranici — strelicama pomerite pitanje više ili niže.")
+    : srDisplay("Dodajte tekst ili prilog i označite javnu vidljivost. Ako polje nije čekirano, stavka se ne pojavljuje na javnom sajtu.");
+  const newTitle = isFaq ? srDisplay("Novo pitanje") : srDisplay("Novi sadržaj");
+  const editTitle = isFaq ? srDisplay("Izmena pitanja") : srDisplay("Izmena sadržaja");
+  const saveLabel = editing ? srDisplay("Sačuvaj izmene") : (isFaq ? srDisplay("Sačuvaj pitanje") : srDisplay("Sačuvaj sadržaj"));
+
+  return `<section>
+    <h2 class="serif" style="font-size:25px;margin:0 0 8px;">${typeLabel}</h2>
+    <p class="resource-intro">${intro}</p>
+    <div class="admin-grid">
+      <div>
+        <h3 id="resource-form-title" style="font-size:15px;margin:0 0 12px;">${editing?editTitle:newTitle}</h3>
+        <form id="resource-form" data-action="saveResource" class="form-col">
+          ${fields}
+          <label class="resource-public-label"><input id="resource-public" type="checkbox" ${rf.isPublic?"checked":""}><span><strong>${srDisplay("Prikaži na javnom sajtu")}</strong><br>${srDisplay("Ako nije čekirano, sadržaj ostaje vidljiv samo administratorima.")}</span></label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-accent" ${state.resourceSaving?"disabled":""}>${state.resourceSaving?srDisplay("Čuvanje…"):saveLabel}</button>
+            ${editing?`<button type="button" class="btn btn-outline" data-action="cancelEditResource" ${state.resourceSaving?"disabled":""}>${srDisplay("Otkaži izmenu")}</button>`:""}
+          </div>
+          ${state.resourceError?`<div class="error-text" role="alert">${escapeHtml(state.resourceError)}</div>`:""}
+        </form>
       </div>
-    </section>
+      <div><h3 style="font-size:15px;margin:0 0 12px;">${srDisplay("Sačuvan sadržaj")}</h3>${list}${state.resourcesLoadError?`<p class="error-text" style="margin-top:12px;">${srDisplay("Baza sadržaja nije dostupna:")} ${escapeHtml(state.resourcesLoadError)}</p>`:""}</div>
+    </div>
+  </section>`;
+}
+
+function renderAdminPanel(){
+  const T_=t();
+  if (!state.isAdmin){
+    return `<div class="admin-empty"><p>${T_.admin_login_title}</p><button class="btn btn-ink" style="margin:16px auto 0;" data-action="setView" data-arg="admin-login">${T_.login}</button></div>`;
+  }
+  const tabs=[{id:"news",label:T_.nav_news}].concat(RESOURCE_TYPES.map(x=>({id:x.id,label:srDisplay(x.label)})),[{id:"stations",label:srDisplay("Stanice")}]);
+  if(!tabs.some(x=>x.id===state.adminTab)) state.adminTab="news";
+  const tab=state.adminTab;
+  const tabsHtml=`<div class="admin-tabs" role="tablist">${tabs.map(x=>`<button type="button" role="tab" aria-selected="${x.id===tab}" class="${x.id===tab?"active":""}" data-action="setAdminTab" data-arg="${x.id}">${x.label}</button>`).join("")}</div>`;
+  const panel = tab==="news" ? renderAdminNews() : tab==="stations" ? renderAdminStations() : renderAdminResources(tab);
+  return `<div class="wrap-admin" style="padding-top:40px;padding-bottom:80px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;"><h1 class="serif" style="font-size:28px;">${T_.admin_panel}</h1><button class="btn btn-outline" data-action="doLogout">${icon('logout',14)} ${T_.logout}</button></div>
+    ${tabsHtml}
+    ${panel}
   </div>`;
 }
 
@@ -1750,6 +1874,8 @@ function render(){
   // keep the active tab visible in the horizontally scrolling mobile nav
   const nav = document.querySelector("nav.tabs"), act = nav && nav.querySelector("button.active");
   if (nav && act) nav.scrollLeft = act.offsetLeft - (nav.clientWidth - act.offsetWidth) / 2;
+  const atabs = document.querySelector(".admin-tabs"), aact = atabs && atabs.querySelector("button.active");
+  if (atabs && aact) atabs.scrollLeft = aact.offsetLeft - (atabs.clientWidth - aact.offsetWidth) / 2;
   document.title = titles[state.view] ? `${titles[state.view]} — ${T_.title}` : T_.title;
 }
 
