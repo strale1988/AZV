@@ -19,6 +19,11 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
 <meta name="twitter:card" content="summary">
 <title>Alarm za vazduh</title>
 <link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Alarm za vazduh">
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://fnkqmwweljsupbmerbkh.supabase.co" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400&family=PT+Sans:wght@400;700&display=swap">
@@ -29,7 +34,7 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
     --paper:#F3F4F0; --surface:#FFFFFF; --surface-2:#E8EBE5;
     --ink:#132029; --line:#DCDED5; --line-strong:#C3C7BC;
     --muted:#566669; --muted2:#556358; --text2:#33454B;
-    --accent:#2F6F80; --accent-soft:rgba(47,111,128,.11); --on-accent:#FFFFFF;
+    --accent:#0060B0; --accent-soft:rgba(0,96,176,.10); --on-accent:#FFFFFF;
     --danger:#B83C30;
     --radius:12px; --radius-sm:8px;
     --shadow:0 1px 2px rgba(19,32,41,.05),0 6px 20px rgba(19,32,41,.06);
@@ -44,7 +49,7 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
     --paper:#0E1418; --surface:#151D23; --surface-2:#1E2930;
     --ink:#E9EDED; --line:#25323A; --line-strong:#33434C;
     --muted:#9DB0B5; --muted2:#A3B6AB; --text2:#C6D1D4;
-    --accent:#5FA8BA; --accent-soft:rgba(95,168,186,.14); --on-accent:#0E1418;
+    --accent:#5AAEF0; --accent-soft:rgba(90,174,240,.16); --on-accent:#0E1418;
     --danger:#E0685A;
     --aq-good:#5DB37E; --aq-moderate:#D4A62A; --aq-usg:#E8913F; --aq-vunhealthy:#C26BC4; --aq-hazardous:#D4527F; --on-aq:#0E1418;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
@@ -55,7 +60,7 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
       --paper:#0E1418; --surface:#151D23; --surface-2:#1E2930;
       --ink:#E9EDED; --line:#25323A; --line-strong:#33434C;
       --muted:#9DB0B5; --muted2:#A3B6AB; --text2:#C6D1D4;
-      --accent:#5FA8BA; --accent-soft:rgba(95,168,186,.14); --on-accent:#0E1418;
+      --accent:#5AAEF0; --accent-soft:rgba(90,174,240,.16); --on-accent:#0E1418;
       --danger:#E0685A;
       --aq-good:#5DB37E; --aq-moderate:#D4A62A; --aq-usg:#E8913F; --aq-vunhealthy:#C26BC4; --aq-hazardous:#D4527F; --on-aq:#0E1418;
       --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
@@ -88,7 +93,7 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
   .wrap-report{max-width:620px;margin:0 auto;padding:0 20px;}
   .wrap-admin{max-width:900px;margin:0 auto;padding:0 20px;}
   .btn{display:inline-flex;align-items:center;gap:6px;border-radius:var(--radius-sm);padding:9px 16px;font-size:13px;cursor:pointer;font-weight:700;border:none;}
-  .btn-ink{background:var(--ink);color:var(--paper);}
+  .btn-ink{background:var(--accent);color:var(--on-accent);}
   .btn-accent{background:var(--accent);color:var(--on-accent);}
   .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--line-strong);}
   .btn:disabled{opacity:.55;cursor:default;}
@@ -111,13 +116,13 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
   .topbar-inner{padding:18px 20px 16px;padding-top:calc(18px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
   .brand{display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;padding:0;}
   .brand-logo{display:block;width:36px;height:36px;}
-  :root[data-theme="dark"] .brand-logo{filter:invert(1);}
-  @media (prefers-color-scheme: dark){:root[data-theme="system"] .brand-logo{filter:invert(1);}}
+  :root[data-theme="dark"] .brand-logo.bw{filter:invert(1);}
+  @media (prefers-color-scheme: dark){:root[data-theme="system"] .brand-logo.bw{filter:invert(1);}}
   .brand-name{font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.01em;}
   .navgroup{display:flex;align-items:center;gap:16px;font-size:14px;flex-wrap:wrap;}
   nav.tabs{display:flex;gap:4px;}
   nav.tabs button{background:none;border:none;cursor:pointer;padding:7px 12px;font-size:14px;color:var(--muted);border-radius:var(--radius-sm);white-space:nowrap;}
-  nav.tabs button.active{color:var(--ink);font-weight:700;background:var(--accent-soft);}
+  nav.tabs button.active{color:var(--accent);font-weight:700;background:var(--accent-soft);}
   .langbox{display:flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:2px;background:var(--surface);flex-shrink:0;}
   .script-indicator{font-size:11px;color:var(--muted2);margin:0 4px 0 6px;letter-spacing:.2px;}
   .langbox button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted2);padding:5px 9px;border-radius:6px;}
@@ -317,8 +322,50 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
     .faq-q:hover .q{color:var(--accent);}
   }
   @media(max-width:480px){
-    .dash-selects select{font-size:16px;}
     .faq-q .q{font-size:17px;}
+  }
+  /* ---- Admin on phones ---- */
+  @media(max-width:600px){
+    .wrap-admin{padding-top:24px !important;padding-bottom:60px !important;}
+    .wrap-admin h1{font-size:24px !important;}
+    .admin-tabs{margin-left:-16px;margin-right:-16px;padding:0 16px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);}
+    .admin-grid{gap:30px;}
+    .resource-admin-row{padding:14px 0;gap:10px;}
+    .resource-admin-row>div:first-child{flex-basis:100%;}
+    .resource-admin-actions{width:100%;justify-content:flex-start;gap:8px;}
+    .resource-admin-actions .btn{padding:10px 14px;min-height:42px;}
+    .resource-admin-actions .move-btn,.resource-admin-actions .del-btn{width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;}
+    .manage-row{gap:10px;padding:12px 0;}
+    .manage-row .del-btn{width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .admin-grid form .btn-accent,#resource-form .btn{flex:1 1 auto;justify-content:center;min-height:46px;}
+    .admin-grid form .btn-accent{align-self:stretch !important;}
+  }
+  /* ---- Brand accent (logo blue) ---- */
+  header.topbar{border-top:3px solid var(--accent);}
+  .dash{border-top:3px solid var(--accent);}
+  .resource-filter button.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  .home-resource-link strong{color:var(--accent);}
+  .home-resource-link.viber{border-color:var(--accent);}
+  .langbox button.active{color:var(--accent);}
+  /* ---- Loading skeleton ---- */
+  .skel{background:linear-gradient(90deg,var(--surface-2) 25%,var(--line) 40%,var(--surface-2) 60%);background-size:300% 100%;animation:shimmer 1.4s ease-in-out infinite;border-radius:8px;}
+  @keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
+  /* ---- Header: on phones it hides while scrolling down and returns on scroll up ---- */
+  @media(max-width:699.98px){
+    header.topbar{position:sticky;top:0;z-index:50;transition:transform .25s ease;}
+    header.topbar.hide{transform:translateY(-100%);}
+  }
+  /* ---- Never let anything push the page wider than the screen ---- */
+  img,svg,video,canvas,iframe{max-width:100%;height:auto;}
+  h1,h2,h3,h4,p,li,td,th,label,button,a,span,strong{overflow-wrap:break-word;}
+  p,li{text-wrap:pretty;}
+  .field,input,select,textarea{max-width:100%;min-width:0;}
+  input[type=date],input[type=file]{width:100%;max-width:100%;min-width:0;}
+  .admin-grid>*,.home-layout>*,.home-resource-links>*,.form-col>*,.resource-card,.dash-inner>*{min-width:0;}
+  pre,code,table.data{max-width:100%;}
+  /* iOS zooms the whole page when a field under 16px gets focus; keep fields at 16px on touch screens */
+  @media(max-width:700px){
+    input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea,.field{font-size:16px;}
   }
 </style>
 </head>
@@ -545,6 +592,14 @@ function levelFor(station){
   if (station.sepaCategory) return levelForKey(SEPA_TO_KEY[station.sepaCategory] || "good");
   return AQI_LEVELS.find(l=>station.aqi<=l.max) || AQI_LEVELS[AQI_LEVELS.length-1];
 }
+function relativeAge(iso){
+  const t0 = new Date(iso).getTime(); if (isNaN(t0)) return "";
+  const min = Math.max(0, Math.round((Date.now()-t0)/60000));
+  if (min < 1) return srDisplay("upravo sada");
+  if (min < 60) return srDisplay(`pre ${min} min`);
+  const h = Math.floor(min/60); if (h < 24) return srDisplay(`pre ${h} h`);
+  return srDisplay(`pre ${Math.floor(h/24)} d`);
+}
 function formatStationTime(iso){
   if (!iso) return "";
   const d = new Date(iso);
@@ -764,17 +819,27 @@ function setView(v, id){
   if (h !== cur) history.pushState(null,"",h);
   showView(v,id);
 }
-window.addEventListener("hashchange", ()=>{ const r=parseHash(); showView(r.view,r.id); });
+// #/stanica/<id> opens the dashboard on that station (used by the "Podeli stanicu" button).
+function stationFromHash(list){
+  const m=(location.hash||"").match(/^#\/stanica\/([^/]+)/); if(!m) return null;
+  let id; try{ id=decodeURIComponent(m[1]); }catch(e){ return null; }
+  return (list||[]).find(x=>String(x.id)===id)||null;
+}
+window.addEventListener("hashchange", ()=>{
+  const ls=stationFromHash(STATIONS); if(ls){ state.stationId=ls.id; state.stationManuallySet=true; state.locatedViaGps=false; }
+  const r=parseHash(); showView(r.view,r.id);
+});
 function copyLink(arg){
   const url = location.origin + location.pathname + "#/" + arg;
   const done = ()=>{ state.copiedLink=arg; render(); setTimeout(()=>{ if(state.copiedLink===arg){ state.copiedLink=null; render(); } },2000); };
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,()=>window.prompt("Link:",url));
   else window.prompt("Link:",url);
 }
-function setStationId(id){ state.stationId=id; state.stationManuallySet=true; state.locatedViaGps=false; render(); }
+function rememberStation(id){ try{ localStorage.setItem("azv-station",String(id)); }catch(e){} }
+function setStationId(id){ rememberStation(id); state.stationId=id; state.stationManuallySet=true; state.locatedViaGps=false; render(); }
 function setCityFirstStation(city){
   const first = STATIONS.find(s=>(s.city||t().city_unknown)===city);
-  if (first) state.stationId = first.id;
+  if (first){ state.stationId = first.id; rememberStation(first.id); }
   state.stationManuallySet=true; state.locatedViaGps=false;
   render();
 }
@@ -1005,7 +1070,22 @@ async function toggleResourceVisibility(id){
   }catch(err){ state.resourceError=(err&&err.message)||String(err); }
   render();
 }
+function adminHasUnsaved(){
+  const g=id=>document.getElementById(id);
+  if(state.adminTab==="news") return ["new-title","new-excerpt","new-body"].some(id=>g(id)&&g(id).value.trim());
+  if(!g("resource-title")) return false;
+  const f=readResourceForm();
+  const same=(a,b)=>String(a||"").trim()===String(b||"").trim();
+  const orig=f.id?state.resources.find(r=>r.id===f.id):null;
+  if(orig){
+    const faq=f.type==="faq";
+    const ob=faq?[orig.summary,orig.body].filter(Boolean).join("\n\n"):orig.body;
+    return !(same(f.title,orig.title)&&same(f.body,ob)&&(faq||(same(f.summary,orig.summary)&&same(f.url,orig.external_url)))) || f.isPublic!==orig.is_public || f.removed.length>0;
+  }
+  return !!(f.title.trim()||f.summary.trim()||f.body.trim()||f.url.trim());
+}
 function setAdminTab(tab){
+  if(tab!==state.adminTab && adminHasUnsaved() && !window.confirm(srDisplay("Imate nesačuvan unos. Odbaciti ga i preći na drugi tab?"))) return;
   state.adminTab=tab; state.resourceForm=null; state.resourceError=""; state.publishError=""; state.deleteError="";
   render();
 }
@@ -1033,7 +1113,7 @@ async function moveFaq(arg){
 async function deleteResource(id){
   if(!state.isAdmin) return;
   const r=state.resources.find(x=>String(x.id)===String(id));
-  if(!r||!window.confirm(srDisplay("Obrisati ovaj sadržaj? Ova radnja se ne može opozvati."))) return;
+  if(!r||!window.confirm(srDisplay(`Obrisati „${r.title}”? Ova radnja se ne može opozvati.`))) return;
   const previous=state.resources; state.resources=previous.filter(x=>x.id!==r.id);
   if(state.resourceForm && state.resourceForm.id===r.id) state.resourceForm=emptyResourceForm();
   render();
@@ -1115,7 +1195,8 @@ async function publishArticle(e){
 }
 
 function confirmDeleteArticle(id){
-  if (window.confirm(t().confirm_delete_article)) deleteArticle(id);
+  const a = state.articles.find(x=>x.id===id);
+  if (window.confirm(t().confirm_delete_article + (a ? `\n\n„${srDisplay(a.title_sr)}”` : ""))) deleteArticle(id);
 }
 async function deleteArticle(id){
   const prev = state.articles;
@@ -1178,6 +1259,13 @@ function initEventDelegation(){
     const fn = ACTIONS[el.dataset.action];
     if (fn) fn(el.value);
   });
+  app.addEventListener("input", e => {
+    if (e.target && e.target.id==="resource-search"){
+      state.resourceSearch = e.target.value.trim(); state.focusResource = null;
+      const box = document.getElementById("live-list");
+      if (box) box.innerHTML = state.view==="faq" ? faqListHtml() : resourcesListHtml();
+    }
+  });
   app.addEventListener("submit", e => {
     const el = e.target.closest("[data-action]");
     if (!el) return;
@@ -1190,6 +1278,8 @@ initEventDelegation();
 /* =================================================================
    RENDER — small template helpers
 ================================================================= */
+// Header logo: "color" uses icons/favicon.png, "bw" uses icons/AZV_Logo_BW_256.png (inverted automatically in dark theme).
+const BRAND_LOGO = "color";
 function renderHeader(){
   const T_=t();
   const navItems = [
@@ -1197,7 +1287,7 @@ function renderHeader(){
     ["resources",T_.nav_docs],["faq",T_.nav_faq],["report",T_.nav_report]
   ];
   const tabs = navItems.map(([v,label])=>
-    `<button class="${state.view===v?'active':''}" data-action="setView" data-arg="${v}">${label}</button>`
+    `<button class="${state.view===v?'active':''}" ${state.view===v?'aria-current="page"':''} data-action="setView" data-arg="${v}">${label}</button>`
   ).join("");
   const langs = ["sr-latn","sr-cyrl"].map(l=>{
     const label = l==="sr-latn"?"SR":"СР";
@@ -1207,7 +1297,7 @@ function renderHeader(){
   <header class="topbar">
     <div class="wrap topbar-inner">
       <button class="brand" data-action="setView" data-arg="home">
-        <img src="icons/favicon.png" alt="" class="brand-logo">
+        <img src="${BRAND_LOGO==='bw' ? 'icons/AZV_Logo_BW_256.png' : 'icons/favicon.png'}" alt="" class="brand-logo${BRAND_LOGO==='bw' ? ' bw' : ''}">
         <span class="serif brand-name">${T_.title}</span>
       </button>
       <div class="navgroup">
@@ -1224,7 +1314,7 @@ function renderHome(){
   const T_=t(); const cur = currentStation(); const level = levelFor(cur);
   const cities = cityOrder();
   const cityOptions = cities.map(c=>`<option value="${c}" ${c===(cur.city||T_.city_unknown)?'selected':''}>${c}</option>`).join("");
-  const stationOptions = STATIONS.filter(s=>(s.city||T_.city_unknown)===(cur.city||T_.city_unknown)).map(s=>`<option value="${s.id}" ${s.id===state.stationId?'selected':''}>${s.name}</option>`).join("");
+  const stationOptions = STATIONS.filter(s=>(s.city||T_.city_unknown)===(cur.city||T_.city_unknown)).map(s=>`<option value="${s.id}" ${s.id===state.stationId?'selected':''}>${s.name} · ${s.sepaCategory?sepaLabel(s.sepaCategory):s.aqi}</option>`).join("");
 
   const newsPreview = state.articles.slice(0,3).map(a=>articleRow(a,true)).join("");
   const eduPreview = POLLUTANTS.slice(0,4).map(p=>`
@@ -1244,7 +1334,7 @@ function renderHome(){
   <div class="wrap home-layout">
   <div class="home-left">
   <div class="dash">
-    <div class="dash-inner">
+    ${state.loadingLive ? `<div class="dash-inner" aria-busy="true" aria-label="${srDisplay("Učitavanje podataka…")}"><div style="display:flex;gap:12px;flex-wrap:wrap;"><div class="skel" style="height:42px;width:140px;"></div><div class="skel" style="height:42px;width:170px;"></div></div><div class="skel" style="height:78px;width:55%;"></div><div class="skel" style="height:10px;width:80%;"></div><div class="skel" style="height:44px;width:100%;"></div><div class="skel" style="height:36px;width:70%;"></div></div>` : `<div class="dash-inner">
       <div>
         <div class="dash-selects">
           <div style="display:flex;align-items:center;gap:6px;">
@@ -1255,7 +1345,7 @@ function renderHome(){
         </div>
         ${state.liveMode ? `<button type="button" class="locate-btn" data-action="manualLocate" ${state.locatingGps?'disabled':''}>${icon(state.locatingGps?'loader':'pin',12,'var(--dash-muted)')} ${state.locatingGps ? T_.locating : (state.locatedViaGps ? T_.gps_located : T_.use_my_location)}</button>` : ""}
         <div class="tabular aqi-num" style="color:${level.color};font-size:${cur.sepaCategory?'clamp(28px,8vw,40px)':'clamp(44px,12vw,84px)'};">${headline}</div>
-        <div class="aqi-cat" style="color:${level.color}">${cur.sepaCategory ? (cur.recordedAt ? `${T_.last_updated} ${formatStationTime(cur.recordedAt)}` : T_.aqi) : `${T_["cat_"+level.key]} · ${T_.aqi}`}</div>
+        <div class="aqi-cat" style="color:${level.color}">${cur.sepaCategory ? (cur.recordedAt ? `${T_.last_updated} ${formatStationTime(cur.recordedAt)} (${relativeAge(cur.recordedAt)})` : T_.aqi) : `${T_["cat_"+level.key]} · ${T_.aqi}`}</div>
         <div class="scale" aria-hidden="true">${AQI_LEVELS.map(l=>`<span class="seg${l.key===level.key?" on":""}" style="--c:${l.color}"></span>`).join("")}</div>
         <p class="advisory">${T_["advisory_"+level.key]}</p>
         <div class="pollutant-row">
@@ -1263,10 +1353,14 @@ function renderHome(){
           <div><span class="tabular" style="font-weight:700">${fmtNum(cur.pm10)}</span> µg/m³ ${T_.pm10}</div>
           ${extraPollutants}
         </div>
-        <div class="live-badge">${icon(state.loadingLive?'loader':'radio',12)} ${state.loadingLive ? "" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <div class="live-badge">${icon(state.loadingLive?'loader':'radio',12)} ${state.loadingLive ? "" : (state.liveMode ? T_.live_badge : T_.demo_badge)}</div>
+          <button type="button" class="locate-btn" style="margin:18px 0 0;" data-action="copyLink" data-arg="stanica/${encodeURIComponent(cur.id)}">${icon('external',12,'var(--dash-muted)')} ${state.copiedLink==="stanica/"+encodeURIComponent(cur.id)?srDisplay("Link kopiran"):srDisplay("Podeli stanicu")}</button>
+        </div>
+        ${(state.liveMode && cur.recordedAt && (Date.now()-new Date(cur.recordedAt).getTime())>3*3600*1000) ? `<div role="status" style="font-size:12px;color:var(--danger);margin-top:8px;max-width:380px;">${srDisplay("Poslednje merenje na ovoj stanici je starije od 3 sata — podaci možda nisu aktuelni.")}</div>` : ""}
         ${(!state.loadingLive && !state.liveMode && state.liveError) ? `<div style="font-size:11px;color:var(--dash-muted);margin-top:4px;max-width:380px;">${T_.live_error_public}</div>` : ""}
       </div>
-    </div>
+    </div>`}
   </div>
   </div>
   <div class="home-right">
@@ -1409,19 +1503,27 @@ function renderResourceCard(r, compact=false){
 function setResourceFilter(type){ state.resourceFilter=type; state.expandedResource=null; state.focusResource=null; render(); }
 function searchResources(e){ e.preventDefault(); const input=document.getElementById("resource-search"); state.resourceSearch=input?input.value.trim():""; state.focusResource=null; render(); }
 function toggleResource(id){ state.expandedResource=state.expandedResource===id?null:id; render(); }
-function renderResources(){
+function resourcesView(){
   const all=publicResources();
   const q=(state.resourceSearch||"").toLocaleLowerCase("sr");
   const focused=state.focusResource ? all.find(r=>String(r.id)===String(state.focusResource)) : null;
   const filtered=focused ? [focused] : all.filter(r=>(state.resourceFilter==="all"||r.type===state.resourceFilter) && (!q||[r.title,r.summary,r.body,...(r.attachments||[]).map(a=>a.name)].some(v=>String(v||"").toLocaleLowerCase("sr").includes(q))));
+  return {focused,filtered};
+}
+function resourcesListHtml(){
+  const {filtered}=resourcesView();
+  return `${state.resourcesLoading?`<div class="resource-empty">${srDisplay("Učitavanje sadržaja…")}</div>`:filtered.length?filtered.map(r=>renderResourceCard(r)).join(""):`<div class="resource-empty">${state.resourcesLoadError?srDisplay("Sadržaj trenutno nije dostupan. Proverite podešavanje baze."):srDisplay("Nema javno objavljenih stavki u ovoj kategoriji. Sadržaj će se pojaviti kada ga administratori objave.")}</div>`}`;
+}
+function renderResources(){
+  const {focused}=resourcesView();
   const filters=[{id:"all",label:"Sve"},...RESOURCE_TYPES.filter(x=>x.id!=="faq")];
   return `<div class="resource-page">
     <h1 class="serif" style="font-size:32px;margin:0 0 9px;">${srDisplay("Dokumentacija i javni materijali")}</h1>
     <p class="resource-intro">${srDisplay("Na jednom mestu su dostupni dokumenti, prikupljeni materijali, istraživanja, nalazi, izveštaji i saopštenja. Prikazuju se samo sadržaji koje su administratori označili kao javne.")}</p>
     ${focused?`<p><button class="btn btn-outline" data-action="setView" data-arg="resources">← ${srDisplay("Prikaži sve")}</button></p>`:""}
-    <form data-action="searchResources" class="resource-tools"><input id="resource-search" class="field" style="flex:1;min-width:190px;" value="${escapeHtml(state.resourceSearch)}" placeholder="${srDisplay("Pretraži naslov, opis ili tekst…")}"><button class="btn btn-ink" type="submit">${srDisplay("Pretraži")}</button></form>
+    <form data-action="searchResources" class="resource-tools"><input id="resource-search" class="field" type="search" style="flex:1;min-width:190px;" value="${escapeHtml(state.resourceSearch)}" placeholder="${srDisplay("Pretraži naslov, opis ili tekst…")}"></form>
     <div class="resource-filter">${filters.map(f=>`<button class="${state.resourceFilter===f.id?'active':''}" data-action="setResourceFilter" data-arg="${f.id}">${srDisplay(f.label)}</button>`).join("")}</div>
-    ${state.resourcesLoading?`<div class="resource-empty">${srDisplay("Učitavanje sadržaja…")}</div>`:filtered.length?filtered.map(r=>renderResourceCard(r)).join(""):`<div class="resource-empty">${state.resourcesLoadError?srDisplay("Sadržaj trenutno nije dostupan. Proverite podešavanje baze."):srDisplay("Nema javno objavljenih stavki u ovoj kategoriji. Sadržaj će se pojaviti kada ga administratori objave.")}</div>`}
+    <div id="live-list">${resourcesListHtml()}</div>
   </div>`;
 }
 function renderFaqItem(r){
@@ -1433,15 +1535,18 @@ function renderFaqItem(r){
     ${open?`<div class="faq-a">${answer}</div><button type="button" class="resource-content-toggle" data-action="copyLink" data-arg="${escapeHtml(shareArg)}" style="margin-bottom:14px;">${state.copiedLink===shareArg?srDisplay("Link kopiran"):srDisplay("Kopiraj link")}</button>`:""}
   </div>`;
 }
-function renderFaq(){
+function faqListHtml(){
   const rows=(state.resources||[]).filter(r=>r.is_public===true&&r.type==="faq");
   const q=(state.resourceSearch||"").toLocaleLowerCase("sr");
   const filtered=rows.filter(r=>!q||[r.title,r.summary,r.body].some(v=>String(v||"").toLocaleLowerCase("sr").includes(q)));
+  return `${state.resourcesLoading?`<div class="resource-empty">${srDisplay("Učitavanje sadržaja…")}</div>`:filtered.length?`<div class="faq-list">${filtered.map(renderFaqItem).join("")}</div>`:`<div class="resource-empty">${state.resourcesLoadError?srDisplay("FAQ sadržaj trenutno nije dostupan. Proverite podešavanje baze."):srDisplay("FAQ je spreman za sadržaj. Administratori mogu dodavati pitanja i odgovore u administratorskoj tabli, a zatim označiti da li su javni.")}</div>`}`;
+}
+function renderFaq(){
   return `<div class="resource-page">
     <h1 class="serif" style="font-size:32px;margin:0 0 9px;">${srDisplay("Česta pitanja (FAQ)")}</h1>
     <p class="resource-intro">${srDisplay("Odgovori na pitanja o kvalitetu vazduha, izvorima podataka, uticaju zagađenja i aktivnostima inicijative.")}</p>
-    <form data-action="searchResources" class="resource-tools"><input id="resource-search" class="field" style="flex:1;min-width:190px;" value="${escapeHtml(state.resourceSearch)}" placeholder="${srDisplay("Pretraži pitanja i odgovore…")}"><button class="btn btn-ink" type="submit">${srDisplay("Pretraži")}</button></form>
-    ${state.resourcesLoading?`<div class="resource-empty">${srDisplay("Učitavanje sadržaja…")}</div>`:filtered.length?`<div class="faq-list">${filtered.map(renderFaqItem).join("")}</div>`:`<div class="resource-empty">${state.resourcesLoadError?srDisplay("FAQ sadržaj trenutno nije dostupan. Proverite podešavanje baze."):srDisplay("FAQ je spreman za sadržaj. Administratori mogu dodavati pitanja i odgovore u administratorskoj tabli, a zatim označiti da li su javni.")}</div>`}
+    <form data-action="searchResources" class="resource-tools"><input id="resource-search" class="field" type="search" style="flex:1;min-width:190px;" value="${escapeHtml(state.resourceSearch)}" placeholder="${srDisplay("Pretraži pitanja i odgovore…")}"></form>
+    <div id="live-list">${faqListHtml()}</div>
   </div>`;
 }
 
@@ -1882,6 +1987,33 @@ function render(){
 /* =================================================================
    INIT — load persisted data, then attempt a live AQI source
 ================================================================= */
+/* Keep the readings fresh: refresh every 10 min while the tab is open, and when the
+   visitor returns to a tab that has been in the background for a while. */
+let lastLiveFetch = Date.now();
+async function refreshLive(){
+  if (!state.liveMode || document.hidden || state.loadingLive) return;
+  try{
+    const live = await loadLiveStations();
+    STATIONS = live; lastLiveFetch = Date.now();
+    if (!STATIONS.some(x=>x.id===state.stationId)) state.stationId = STATIONS[0].id;
+    const a = document.activeElement;
+    if (state.view==="home" && !(a && /^(SELECT|INPUT|TEXTAREA)$/.test(a.tagName))) render();
+  }catch(e){ console.warn("Live refresh failed:", e); }
+}
+setInterval(refreshLive, 10*60*1000);
+document.addEventListener("visibilitychange", ()=>{ if (!document.hidden && Date.now()-lastLiveFetch > 10*60*1000) refreshLive(); });
+
+(function headerAutoHide(){
+  let lastY = window.scrollY;
+  window.addEventListener("scroll", ()=>{
+    const h = document.querySelector("header.topbar"); if (!h) return;
+    const y = window.scrollY;
+    if (window.innerWidth >= 700 || y <= 80 || y < lastY - 6) h.classList.remove("hide");
+    else if (y > lastY + 6) h.classList.add("hide");
+    lastY = y;
+  }, {passive:true});
+})();
+
 (async function init(){
   await restoreAdminSession();
   { const r = parseHash(); state.view = r.view;
@@ -1906,8 +2038,12 @@ function render(){
     const live = await loadLiveStations();
     STATIONS = live;
     const noviSadStation = live.find(s=>s.city==="Novi Sad");
-    state.stationId = (noviSadStation || live[0]).id;
-    state.liveMode = true;
+    let saved = null; try{ saved = localStorage.getItem("azv-station"); }catch(e){}
+    const savedStation = saved && live.find(s=>String(s.id)===saved);
+    const linkedStation = stationFromHash(live);
+    state.stationId = (linkedStation || savedStation || noviSadStation || live[0]).id;
+    if (linkedStation || savedStation) state.stationManuallySet = true; // returning visitor: keep their pick, no location prompt
+    state.liveMode = true; lastLiveFetch = Date.now();
   }catch(e){
     console.error("Live station load failed, using demo data:", e);
     state.liveError = (e && (e.message || e.error_description || e.hint || JSON.stringify(e))) || String(e);

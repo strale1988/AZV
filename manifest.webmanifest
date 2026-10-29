@@ -1,0 +1,16 @@
+{
+  "name": "Alarm za vazduh",
+  "short_name": "Alarm za vazduh",
+  "description": "Praćenje kvaliteta vazduha u realnom vremenu za gradove u Srbiji.",
+  "lang": "sr-Latn",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F4F0",
+  "theme_color": "#0060B0",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
