@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F3F4F0">
+<script>
+/* Theme is applied before first paint to avoid a flash. Modes: light (default) -> dark -> system. */
+(function(){var m="light";try{m=localStorage.getItem("theme")||"light";}catch(e){}
+if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("data-theme",m);})();
+</script>
 <meta name="description" content="Praćenje kvaliteta vazduha u realnom vremenu za gradove u Srbiji — AQI po stanicama, vesti o zagađenju, edukacija o zagađivačima i prijava zagađenja.">
 <meta property="og:title" content="Alarm za vazduh">
 <meta property="og:description" content="Praćenje kvaliteta vazduha u realnom vremenu za gradove u Srbiji — AQI po stanicama, vesti o zagađenju i edukacija o zagađivačima.">
@@ -18,42 +24,57 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400&family=PT+Sans:wght@400;700&display=swap">
 <style>
   :root{
-    --ink:#132029; --paper:#ECEDE8; --accent:#3E7C8C; --line:#D3D2C8;
-    --muted:#5B6B70; --muted2:#556358; --text2:#33454B;
-    /* Dark-dashboard-only tones (previously one-off hex values scattered
-       through the JS templates and CSS below — consolidated here so a
-       future re-theme or dark-mode pass only has to change one place). */
+    color-scheme:light;
+    /* Page roles (theme-adaptive) */
+    --paper:#F3F4F0; --surface:#FFFFFF; --surface-2:#E8EBE5;
+    --ink:#132029; --line:#DCDED5; --line-strong:#C3C7BC;
+    --muted:#566669; --muted2:#556358; --text2:#33454B;
+    --accent:#2F6F80; --accent-soft:rgba(47,111,128,.11); --on-accent:#FFFFFF;
+    --danger:#B83C30;
+    --radius:12px; --radius-sm:8px;
+    --shadow:0 1px 2px rgba(19,32,41,.05),0 6px 20px rgba(19,32,41,.06);
+    /* Dashboard panel: always a dark surface in every theme */
     --dash-muted:#93A3A6; --dash-advisory:#C7D1D3;
     --dash-border:#33454B; --dash-border2:#26363C; --scrollbar-thumb:#3A4A50;
-    --danger:#C1483B;
-    /* Fixed "always dark accent surface" tokens — the hero dashboard card,
-       the ink-colored buttons, and the skip link are a deliberate dark
-       accent against the page in BOTH light and dark mode (same idea as a
-       printed masthead panel), so they're pinned here rather than tracking
-       --ink/--paper, which below become theme-adaptive text/background
-       roles instead. Values match light mode's --ink/--paper exactly, so
-       light-mode rendering is unchanged; only the dark-mode media query
-       below actually depends on this split existing. */
     --surface-dark:#132029; --on-dark:#ECEDE8;
   }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --paper:#0E1418; --surface:#151D23; --surface-2:#1E2930;
+    --ink:#E9EDED; --line:#25323A; --line-strong:#33434C;
+    --muted:#9DB0B5; --muted2:#A3B6AB; --text2:#C6D1D4;
+    --accent:#5FA8BA; --accent-soft:rgba(95,168,186,.14); --on-accent:#0E1418;
+    --danger:#E0685A;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  }
   @media (prefers-color-scheme: dark){
-    :root{
-      --paper:#181A17; --ink:#EDEEEA; --line:#3A3D33;
-      --muted:#9FB0B5; --muted2:#A9C0A0; --text2:#CDD6D8;
-      --accent:#5FA8BA; --danger:#E0685A;
+    :root[data-theme="system"]{
+      color-scheme:dark;
+      --paper:#0E1418; --surface:#151D23; --surface-2:#1E2930;
+      --ink:#E9EDED; --line:#25323A; --line-strong:#33434C;
+      --muted:#9DB0B5; --muted2:#A3B6AB; --text2:#C6D1D4;
+      --accent:#5FA8BA; --accent-soft:rgba(95,168,186,.14); --on-accent:#0E1418;
+      --danger:#E0685A;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
     }
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
   html,body{margin:0;padding:0;overflow-x:hidden;max-width:100%;}
   img{max-width:100%;}
-  body{font-family:'PT Sans',Arial,sans-serif;background:var(--paper);color:var(--ink);}
+  body{font-family:'PT Sans',Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;transition:background-color .2s ease,color .2s ease;}
+  h1,h2,h3{text-wrap:balance;}
+  #app{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
+  #app>main{flex:1 0 auto;}
+  h1.serif{letter-spacing:-.01em;line-height:1.15;}
+  ::selection{background:var(--accent-soft);}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   .serif{font-family:'PT Serif',Georgia,serif;}
   .tabular{font-variant-numeric:tabular-nums;}
   button, input, textarea, select{font-family:inherit;}
   a{color:inherit;}
-  button, .brand, nav.tabs button, .langbox button, .other-stations button, .glossary-head, .readmore, .adminbtn, .btn, .del-btn, .sectionhead{transition:color .15s ease,background-color .15s ease,border-color .15s ease,opacity .15s ease;}
-  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px;}
+  button, .brand, nav.tabs button, .langbox button, .iconbtn, .other-stations button, .glossary-head, .readmore, .adminbtn, .btn, .del-btn, .sectionhead{transition:color .15s ease,background-color .15s ease,border-color .15s ease,opacity .15s ease;}
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
   @media(prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
   }
@@ -61,53 +82,75 @@
   .wrap-narrow{max-width:760px;margin:0 auto;padding:0 20px;}
   .wrap-report{max-width:620px;margin:0 auto;padding:0 20px;}
   .wrap-admin{max-width:900px;margin:0 auto;padding:0 20px;}
-  .btn{display:inline-flex;align-items:center;gap:6px;border-radius:3px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:700;border:none;}
-  .btn-ink{background:var(--surface-dark);color:var(--on-dark);}
-  .btn-accent{background:var(--accent);color:#fff;}
-  .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--line);}
-  .field{padding:9px 10px;border:1px solid var(--line);border-radius:3px;font-size:14px;width:100%;}
+  .btn{display:inline-flex;align-items:center;gap:6px;border-radius:var(--radius-sm);padding:9px 16px;font-size:13px;cursor:pointer;font-weight:700;border:none;}
+  .btn-ink{background:var(--ink);color:var(--paper);}
+  .btn-accent{background:var(--accent);color:var(--on-accent);}
+  .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--line-strong);}
+  .btn:disabled{opacity:.55;cursor:default;}
+  .field{padding:10px 12px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);font-size:14px;width:100%;}
+  input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select{background:var(--surface);color:var(--ink);}
+  input[type=checkbox],input[type=radio]{accent-color:var(--accent);}
+  .field-wrap{display:flex;align-items:center;gap:8px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);padding:0 12px;background:var(--surface);}
+  .field-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .field-wrap input:focus,.field-wrap input:focus-visible{outline:none;box-shadow:none;}
+  input:not([type=checkbox]):not([type=radio]):focus,textarea:focus{border-color:var(--accent);}
+  ::placeholder{color:var(--muted);opacity:.85;}
   .icon{display:inline-flex;vertical-align:middle;}
   .spin{animation:spin 1s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  header.topbar{border-bottom:1px solid var(--line);}
-  .topbar-inner{padding:26px 20px 22px;padding-top:calc(26px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  header.topbar{border-bottom:1px solid var(--line);background:var(--paper);}
+  @supports (background:color-mix(in srgb,red 50%,transparent)){
+    header.topbar{background:color-mix(in srgb,var(--paper) 86%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);}
+  }
+  @media(min-width:700px){header.topbar{position:sticky;top:0;z-index:50;}}
+  .topbar-inner{padding:18px 20px 16px;padding-top:calc(18px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
   .brand{display:flex;align-items:center;gap:12px;background:none;border:none;cursor:pointer;padding:0;}
   .brand-logo{display:block;width:36px;height:36px;}
-  .brand-name{font-size:26px;font-weight:700;color:var(--ink);}
+  :root[data-theme="dark"] .brand-logo{filter:invert(1) hue-rotate(180deg);}
+  @media (prefers-color-scheme: dark){:root[data-theme="system"] .brand-logo{filter:invert(1) hue-rotate(180deg);}}
+  .brand-name{font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.01em;}
   .navgroup{display:flex;align-items:center;gap:16px;font-size:14px;flex-wrap:wrap;}
-  nav.tabs{display:flex;gap:14px;}
-  nav.tabs button{background:none;border:none;cursor:pointer;padding:4px 0;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;}
-  nav.tabs button.active{color:var(--ink);font-weight:700;border-bottom:2px solid var(--accent);}
-  .langbox{display:flex;align-items:center;gap:4px;border-left:1px solid var(--line);padding-left:14px;flex-shrink:0;}
-  .script-indicator{font-size:11px;color:var(--muted2);margin-right:2px;letter-spacing:.2px;}
-  .langbox button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted2);padding:2px 4px;}
-  .langbox button.active{font-weight:700;color:var(--ink);}
-  .adminbtn{display:flex;align-items:center;gap:6px;background:var(--surface-dark);color:var(--on-dark);border:none;border-radius:3px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:700;flex-shrink:0;}
-  .dash{background:var(--surface-dark);color:var(--on-dark);}
-  .dash-inner{padding:36px 20px 30px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:24px;}
+  nav.tabs{display:flex;gap:4px;}
+  nav.tabs button{background:none;border:none;cursor:pointer;padding:7px 12px;font-size:14px;color:var(--muted);border-radius:var(--radius-sm);white-space:nowrap;}
+  nav.tabs button.active{color:var(--ink);font-weight:700;background:var(--accent-soft);}
+  .langbox{display:flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:2px;background:var(--surface);flex-shrink:0;}
+  .script-indicator{font-size:11px;color:var(--muted2);margin:0 4px 0 6px;letter-spacing:.2px;}
+  .langbox button{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted2);padding:5px 9px;border-radius:6px;}
+  .langbox button.active{font-weight:700;color:var(--ink);background:var(--surface-2);}
+  .adminbtn,.iconbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 12px;font-size:13px;cursor:pointer;font-weight:700;flex-shrink:0;}
+  .iconbtn{width:36px;height:36px;padding:0;}
+  .home-layout{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;padding-top:24px;padding-bottom:56px;}
+  .home-left{position:sticky;top:92px;min-width:0;}
+  .home-right{min-width:0;display:flex;flex-direction:column;gap:40px;}
+  .home-right .sectionhead{margin-bottom:6px;}
+  .dash{background:var(--surface-dark);color:var(--on-dark);border-radius:18px;border:1px solid var(--dash-border2);box-shadow:var(--shadow);color-scheme:dark;--danger:#E0685A;overflow:hidden;}
+  .dash-inner{padding:28px 28px 22px;display:flex;flex-direction:column;gap:24px;}
   .dash-selects{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
   .dash-selects select{background:transparent;color:var(--on-dark);border:none;font-size:15px;font-weight:700;cursor:pointer;}
-  .dash-selects select.station{color:var(--dash-advisory);border:1px solid var(--dash-border);border-radius:3px;font-size:13px;padding:2px 6px;}
-  .dash-selects select option{color:var(--surface-dark);}
+  .dash-selects select.station{color:var(--dash-advisory);border:1px solid var(--dash-border);border-radius:var(--radius-sm);font-size:13px;padding:4px 8px;}
+  .dash-selects select option{background:var(--surface-dark);color:var(--on-dark);}
   .dash select:focus-visible{outline:2px solid var(--dash-advisory);outline-offset:2px;}
-  .aqi-num{font-size:clamp(44px,12vw,84px);font-weight:700;line-height:1;}
-  .aqi-cat{font-size:15px;font-weight:700;margin-top:4px;}
+  .aqi-num{font-size:clamp(44px,12vw,72px);font-weight:700;line-height:1;}
+  .aqi-cat{font-size:15px;font-weight:700;margin-top:6px;}
+  .scale{display:flex;gap:3px;margin-top:16px;max-width:380px;align-items:center;}
+  .scale .seg{flex:1;height:5px;border-radius:3px;background:var(--c);opacity:.3;}
+  .scale .seg.on{opacity:1;height:9px;}
   .advisory{max-width:380px;font-size:14px;line-height:1.5;color:var(--dash-advisory);margin-top:12px;}
-  .pollutant-row{display:flex;gap:12px 20px;margin-top:16px;font-size:13px;flex-wrap:wrap;}
-  .live-badge{margin-top:18px;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);border:1px solid var(--dash-border);border-radius:3px;padding:4px 8px;}
-  .locate-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);background:none;border:1px solid var(--dash-border);border-radius:3px;padding:4px 8px;cursor:pointer;margin:-2px 0 6px;font-family:inherit;}
+  .pollutant-row{display:flex;gap:8px;margin-top:18px;font-size:13px;flex-wrap:wrap;}
+  .pollutant-row>div{padding:7px 12px;border:1px solid var(--dash-border);border-radius:var(--radius-sm);background:rgba(255,255,255,.03);}
+  .live-badge{margin-top:18px;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);border:1px solid var(--dash-border);border-radius:999px;padding:4px 10px;}
+  .locate-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dash-muted);background:none;border:1px solid var(--dash-border);border-radius:999px;padding:4px 10px;cursor:pointer;margin:-2px 0 8px;font-family:inherit;}
   .locate-btn:disabled{opacity:.6;cursor:default;}
-  .other-stations{min-width:min(280px,100%);max-height:320px;overflow-y:auto;padding-right:10px;position:relative;}
+  .other-stations{width:100%;max-height:260px;overflow-y:auto;padding:16px 8px 0 0;position:relative;border-top:1px solid var(--dash-border2);}
   .scroll-fade{position:sticky;bottom:0;left:0;right:0;height:22px;margin-top:-22px;background:linear-gradient(to bottom, rgba(19,32,41,0), var(--surface-dark));pointer-events:none;}
   .other-stations .oh{font-size:12px;letter-spacing:.3px;color:var(--dash-muted);margin-bottom:10px;}
-  .other-stations .cityhead{font-size:11px;color:var(--muted);margin:8px 0 4px;}
-  .other-stations button{display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;border-bottom:1px solid var(--dash-border2);padding:5px 0;cursor:pointer;color:var(--on-dark);width:100%;text-align:left;}
+  .other-stations .cityhead{font-size:12px;font-weight:700;color:var(--dash-muted);margin:12px 0 4px;}
+  .other-stations button{display:flex;align-items:center;justify-content:space-between;gap:16px;background:none;border:none;border-radius:6px;padding:7px 8px;cursor:pointer;color:var(--on-dark);width:100%;text-align:left;}
   .other-stations button span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .other-stations button span:last-child{font-weight:700;flex-shrink:0;}
-  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:40px;padding:36px 20px 60px;}
-  @media(max-width:700px){.grid2{grid-template-columns:1fr;} .dash-inner{flex-direction:column;}}
+    @media(max-width:860px){.home-layout{grid-template-columns:1fr;gap:32px;} .home-left{position:static;}}
   .sectionhead{display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:0;margin-bottom:16px;}
-  .sectionhead span.txt{font-size:20px;font-weight:700;color:var(--ink);}
+  .sectionhead span.txt{font-size:21px;font-weight:700;color:var(--ink);letter-spacing:-.005em;}
   .article-row{border-bottom:1px solid var(--line);padding:14px 0;}
   .article-date{font-size:12px;color:var(--muted2);margin-bottom:4px;}
   .article-title{font-weight:700;margin-bottom:6px;line-height:1.3;}
@@ -119,8 +162,6 @@
   .pollutant-mini{border-bottom:1px solid var(--line);padding:10px 0;}
   .pollutant-mini .n{font-weight:700;font-size:14px;}
   .pollutant-mini .d{font-size:13px;color:var(--text2);}
-  .newsletter-box{margin-top:24px;border:1px solid var(--line);padding:16px;border-radius:3px;}
-  .newsletter-box .t{font-weight:700;font-size:14px;margin-bottom:8px;}
   .glossary-item{border-bottom:1px solid var(--line);}
   .glossary-head{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:none;cursor:pointer;padding:16px 0;text-align:left;}
   .glossary-head .n{font-size:19px;font-weight:700;color:var(--ink);}
@@ -132,70 +173,74 @@
   .industrial-item .name{font-weight:700;font-size:15px;}
   .industrial-item .place{font-size:12px;color:var(--muted2);}
   .industrial-item .desc{font-size:13.5px;color:var(--text2);margin-top:4px;line-height:1.5;}
-  .report-card{border:1px solid var(--line);border-radius:4px;padding:18px;margin-bottom:30px;}
+  .report-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:30px;box-shadow:var(--shadow);}
   .report-card .t{font-weight:700;font-size:15px;margin-bottom:4px;}
   .report-card .d{font-size:13px;color:var(--muted);margin-bottom:14px;}
   .or-divider{font-size:13px;color:var(--muted2);margin-bottom:16px;}
   .form-col{display:flex;flex-direction:column;gap:10px;}
   .label{font-size:13px;color:var(--muted);display:block;}
-  .label input{display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--line);border-radius:3px;font-size:14px;}
+  .label input{display:block;width:100%;margin-top:4px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);font-size:14px;}
   .error-text{color:var(--danger);font-size:13px;}
   .admin-empty{max-width:500px;margin:0 auto;padding:60px 20px;text-align:center;color:var(--muted);}
   .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;}
   @media(max-width:700px){.admin-grid{grid-template-columns:1fr;}}
   table.data{width:100%;border-collapse:collapse;font-size:13px;}
-  table.data th{padding:4px 0;text-align:left;}
-  table.data thead tr{border-bottom:1px solid var(--line);color:var(--muted);position:sticky;top:0;background:var(--paper);}
+  table.data th{padding:6px 14px 6px 0;text-align:left;font-weight:700;white-space:nowrap;}
+  table.data thead tr{border-bottom:1px solid var(--line-strong);color:var(--muted);position:sticky;top:0;background:var(--paper);}
   table.data tbody tr{border-bottom:1px solid var(--line);}
-  table.data td{padding:6px 0;}
+  table.data td{padding:8px 14px 8px 0;}
+  table.data th:last-child,table.data td:last-child{padding-right:0;}
   .manage-row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:10px 0;}
   .manage-row .tt{font-weight:700;font-size:14px;}
   .manage-row .dd{font-size:12px;color:var(--muted2);}
   .del-btn{background:none;border:none;cursor:pointer;color:var(--danger);}
-  .skip-link{position:absolute;left:-9999px;top:0;background:var(--surface-dark);color:var(--on-dark);padding:10px 16px;border-radius:0 0 4px 0;z-index:1000;font-size:14px;font-weight:700;text-decoration:none;}
+  .skip-link{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:0 0 8px 0;z-index:1000;font-size:14px;font-weight:700;text-decoration:none;}
   .skip-link:focus{left:0;}
-  footer.foot{border-top:1px solid var(--line);padding:20px;text-align:center;font-size:12px;color:var(--muted2);}
+  footer.foot{border-top:1px solid var(--line);padding:28px 20px 34px;text-align:center;font-size:12px;color:var(--muted2);line-height:1.8;}
 
 
-  .adminbtn.icon-only{width:36px;height:34px;padding:0;justify-content:center;gap:0;border:1px solid var(--dash-border);}
+  .adminbtn.icon-only{width:36px;height:36px;padding:0;gap:0;}
   .resource-page{max-width:900px;margin:0 auto;padding:40px 20px 76px;}
   .resource-intro{color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 22px;max-width:680px;}
   .resource-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;}
   .resource-filter{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;}
-  .resource-filter button{border:1px solid var(--line);background:transparent;border-radius:3px;padding:7px 10px;color:var(--muted);cursor:pointer;font-size:12px;}
-  .resource-filter button.active{background:var(--surface-dark);border-color:var(--surface-dark);color:var(--on-dark);}
-  .resource-card{border:1px solid var(--line);border-radius:4px;padding:18px;margin:12px 0;background:transparent;}
+  .resource-filter button{border:1px solid var(--line-strong);background:transparent;border-radius:999px;padding:7px 14px;color:var(--muted);cursor:pointer;font-size:12px;}
+  .resource-filter button.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .resource-card{border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:14px 0;background:var(--surface);box-shadow:var(--shadow);}
   .resource-type{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);font-weight:700;margin-bottom:8px;}
   .resource-card h2{font-size:20px;line-height:1.3;margin:0 0 8px;}
   .resource-card .summary{font-size:14px;color:var(--text2);line-height:1.55;margin:0 0 10px;}
   .resource-card .body{font-size:14px;color:var(--text2);line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px;}
   .resource-card .meta{font-size:12px;color:var(--muted2);margin-bottom:8px;}
   .resource-card .resource-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
-  .resource-empty{border:1px dashed var(--line);padding:26px 18px;text-align:center;color:var(--muted);border-radius:4px;font-size:14px;line-height:1.5;}
+  .resource-empty{border:1px dashed var(--line-strong);padding:28px 18px;text-align:center;color:var(--muted);border-radius:var(--radius);font-size:14px;line-height:1.5;}
   .resource-admin-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:12px 0;}
   .resource-admin-row .meta{font-size:12px;color:var(--muted2);margin-top:4px;}
   .resource-admin-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
   .resource-public-label{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);line-height:1.4;}
   .resource-public-label input{margin-top:2px;}
-  .home-resource-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 20px 56px;}
-  .home-resource-link{display:block;text-align:left;text-decoration:none;border:1px solid var(--line);padding:16px;border-radius:3px;background:none;color:var(--ink);cursor:pointer;}
+  .home-resource-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  .home-resource-link{display:flex;flex-direction:column;justify-content:flex-start;text-align:left;text-decoration:none;border:1px solid var(--line);padding:20px 22px;border-radius:var(--radius);background:var(--surface);color:var(--ink);cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease;}
   .home-resource-link strong{display:block;font-family:'PT Serif',Georgia,serif;font-size:18px;margin-bottom:5px;}
   .home-resource-link span{font-size:13px;color:var(--muted);line-height:1.45;}
-  .home-resource-link.viber{grid-column:1/-1;display:flex;flex-direction:column;border-color:var(--accent);}
+  .home-resource-link.viber{grid-column:1/-1;display:flex;flex-direction:column;border-color:var(--accent);background:var(--accent-soft);}
   .foot a, .foot button{color:var(--accent);font-weight:700;background:none;border:none;cursor:pointer;font-size:12px;padding:6px 8px;text-decoration:underline;}
   .legal h2{font-size:22px;margin:30px 0 8px;}
   .legal p, .legal li{font-size:14.5px;line-height:1.65;color:var(--text2);}
   .legal ul{padding-left:20px;}
   .resource-content-toggle{background:none;border:0;padding:7px 0;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;}
-  @media(max-width:600px){.resource-page{padding:30px 16px 58px}.resource-card{padding:14px}.home-resource-links{grid-template-columns:1fr;margin-left:16px;margin-right:16px}.resource-admin-row{align-items:flex-start}.resource-admin-actions{gap:4px}.resource-admin-actions .btn{padding:7px 9px}}
+  @media(max-width:600px){.resource-page{padding:30px 16px 58px}.resource-card{padding:16px}.home-resource-links{grid-template-columns:1fr}.resource-admin-row{align-items:flex-start}.resource-admin-actions{gap:4px}.resource-admin-actions .btn{padding:7px 9px}}
 
   /* Desktop-only polish: hover states (ignored on touch) */
   @media(hover:hover){
     nav.tabs button:hover{color:var(--ink);}
+    .other-stations button:hover{background:rgba(255,255,255,.06);}
     .other-stations button:hover span:first-child{color:#fff;}
+    .home-resource-link:hover{border-color:var(--accent);box-shadow:var(--shadow);}
+    .iconbtn:hover,.adminbtn:hover,.btn-outline:hover,.resource-filter button:hover{background:var(--surface-2);}
     .glossary-head:hover .n{color:var(--accent);}
     .btn:hover{opacity:.92;}
-    .adminbtn:hover{opacity:.9;}
+    
     .readmore:hover{color:var(--ink);}
     .langbox button:hover{color:var(--ink);}
     .del-btn:hover{opacity:.75;}
@@ -222,28 +267,30 @@
   @media(max-width:480px){
     .brand-name{font-size:22px;}
     .brand-logo{width:30px;height:30px;}
-    .topbar-inner{padding:28px 16px 20px;padding-top:calc(28px + env(safe-area-inset-top));}
+    .topbar-inner{padding:20px 16px 14px;padding-top:calc(20px + env(safe-area-inset-top));}
     .wrap,.wrap-narrow,.wrap-report,.wrap-admin{padding-left:16px;padding-right:16px;}
-    nav.tabs{gap:10px;}
-    nav.tabs button{padding:10px 2px;font-size:13px;min-height:44px;}
-    .adminbtn{padding:10px;min-height:40px;}
+    nav.tabs{gap:2px;}
+    nav.tabs button{padding:10px 10px;font-size:13px;min-height:44px;}
+    .script-indicator{display:none;}
+    .iconbtn,.adminbtn.icon-only{width:40px;height:40px;}
     .adminbtn-label{font-size:12px;}
-    .langbox{padding-left:10px;}
-    .langbox button{padding:6px 6px;}
-    .dash-inner{padding:28px 16px 24px;}
-    .grid2{padding:28px 16px 48px;gap:32px;}
+    .langbox button{padding:9px 8px;}
+    .home-layout{padding-top:16px;padding-bottom:40px;}
+    .dash{border-radius:14px;}
+    .dash-inner{padding:22px 18px 18px;}
     .advisory{max-width:100%;}
     .pollutant-row{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
     .btn{padding:11px 18px;}
     .readmore{padding:12px 0 0;}
     .del-btn{padding:8px;}
-    .other-stations button{padding:9px 0;}
+    .other-stations button{padding:10px 8px;}
   }
 </style>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Пређи на садржај / Skip to content</a>
 <div id="app"></div>
+<div id="theme-status" class="sr-only" role="status" aria-live="polite"></div>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
@@ -252,18 +299,28 @@
 ================================================================= */
 function icon(name, size, color){
   size = size || 16; color = color || 'currentColor';
-  // Custom icons live in icons/<name>.png as white-on-transparent PNGs.
-  // Rendered as a CSS mask (not a plain <img>) so `color` can still tint
-  // them per-use, the same way the old inline SVGs were tinted.
-  const PNG_ICONS = new Set(["wind","newspaper","book","factory","flag","pin","radio","globe","shield","login","logout","plus","trash","chevron","external"]);
-  if (PNG_ICONS.has(name)){
-    const maskStyle = `-webkit-mask-image:url(icons/${name}.png);mask-image:url(icons/${name}.png);`+
-      `-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;`+
-      `-webkit-mask-position:center;mask-position:center;`;
-    return `<span class="icon" style="display:inline-block;width:${size}px;height:${size}px;flex-shrink:0;background-color:${color};${maskStyle}"></span>`;
-  }
-  const base = `viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+  // Inline stroke icons: they take their color from CSS (currentColor or a var()),
+  // so every icon follows the light/dark theme with no image files involved.
+  const base = `viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:${color};flex-shrink:0" aria-hidden="true" focusable="false"`;
   const paths = {
+    shield: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>`,
+    pin: `<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>`,
+    wind: `<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>`,
+    newspaper: `<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5"/><path d="M10 6h8v4h-8z"/>`,
+    book: `<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>`,
+    factory: `<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M17 18h1M12 18h1M7 18h1"/>`,
+    flag: `<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>`,
+    radio: `<circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2"/>`,
+    globe: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>`,
+    login: `<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>`,
+    logout: `<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>`,
+    plus: `<path d="M12 5v14M5 12h14"/>`,
+    trash: `<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>`,
+    chevron: `<path d="m6 9 6 6 6-6"/>`,
+    external: `<path d="M15 3h6v6M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>`,
+    sun: `<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>`,
+    moon: `<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>`,
+    monitor: `<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>`,
     send: `<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>`,
     loader: `<circle cx="12" cy="12" r="9" stroke-dasharray="42" stroke-dashoffset="15"/>`,
   };
@@ -293,7 +350,6 @@ const T = {
     edu_title:"Vodič kroz zagađivače",
     industrial_title:"Industrijski izvori zagađenja",
     industrial_intro:"Pored saobraćaja i grejanja, veći deo zagađenja u Srbiji potiče od industrijskih postrojenja.",
-    newsletter_title:"Prijavite se na obaveštenja", newsletter_ph:"vasa@email.com", newsletter_btn:"Prijavi se", newsletter_ok:"Hvala na prijavi!",
     confirm_delete_article:"Da li ste sigurni da želite da obrišete ovu vest? Ova radnja se ne može opozvati.",
     live_error_public:"Trenutno prikazujemo demo podatke — pravi podaci uživo su privremeno nedostupni.",
     admin_login_title:"Prijava za administratore", email:"Nalog", password:"Lozinka", login_btn:"Pošalji bezbedni kod",
@@ -307,7 +363,7 @@ const T = {
     report_title:"Prijavite zagađenje vazduha",
     report_intro:"Primetili ste dim, neprijatan miris ili gustu maglu koja ne izgleda kao obična magla? Prijavite to — svaka prijava pomaže da se identifikuju zagađivači.",
     report_external_title:"Prijava preko TraceTheToxin",
-    report_external_desc:"Zajednička mreža za prijavu zagađenja vazduha — mapa uživo, kategorije (dim, sumpor, hemikalije...) i praćenje izvora po pravcu vetra. Otvara se u novoj kartici.",
+    report_external_desc:"Zajednička mreža za prijavu lošeg vazduha: mapa uživo, kategorije prijava, tragovi vetra i traženje mogućih izvora. Otvara se u novoj kartici.",
     report_external_btn:"Otvori TraceTheToxin",
     edu_smell_title:"Vodič po mirisu", edu_smell_intro:"Neprijatan miris je često prvi znak zagađenja. Evo šta pojedini mirisi obično znače.",
     smell_if:"Ako osetite:", main_sources:"Glavni izvori:", smell_label:"Miris:",
@@ -331,7 +387,6 @@ const T = {
     edu_title:"Водич кроз загађиваче",
     industrial_title:"Индустријски извори загађења",
     industrial_intro:"Поред саобраћаја и грејања, већи део загађења у Србији потиче од индустријских постројења.",
-    newsletter_title:"Пријавите се на обавештења", newsletter_ph:"vasa@email.com", newsletter_btn:"Пријави се", newsletter_ok:"Хвала на пријави!",
     confirm_delete_article:"Да ли сте сигурни да желите да обришете ову вест? Ова радња се не може опозвати.",
     live_error_public:"Тренутно приказујемо демо податке — прави подаци уживо су привремено недоступни.",
     admin_login_title:"Пријава за администраторе", email:"Налог", password:"Лозинка", login_btn:"Пошаљи безбедни код",
@@ -345,7 +400,7 @@ const T = {
     report_title:"Пријавите загађење ваздуха",
     report_intro:"Приметили сте дим, непријатан мирис или густу маглу која не изгледа као обична магла? Пријавите то — свака пријава помаже да се идентификују загађивачи.",
     report_external_title:"Пријава преко TraceTheToxin",
-    report_external_desc:"Заједничка мрежа за пријаву загађења ваздуха — мапа уживо, категорије (дим, сумпор, хемикалије...) и праћење извора по правцу ветра. Отвара се у новој картици.",
+    report_external_desc:"Заједничка мрежа за пријаву лошег ваздуха: мапа уживо, категорије пријава, трагови ветра и тражење могућих извора. Отвара се у новој картици.",
     report_external_btn:"Отвори TraceTheToxin",
     edu_smell_title:"Водич по мирису", edu_smell_intro:"Непријатан мирис је често први знак загађења. Ево шта поједини мириси обично значе.",
     smell_if:"Ако осетите:", main_sources:"Главни извори:", smell_label:"Мирис:",
@@ -415,7 +470,7 @@ function srSafe(str){ return escapeHtml(srDisplay(str)); }
 const AQI_LEVELS = [
   {max:50,key:"good",color:"#4C9A6A",code:"D"},{max:100,key:"moderate",color:"#B98F1E",code:"U"},
   {max:150,key:"usg",color:"#D97B29",code:"NO"},{max:200,key:"unhealthy",color:"var(--danger)",code:"N"},
-  {max:300,key:"vunhealthy",color:"#8B3F8C",code:"VN"},{max:9999,key:"hazardous",color:"#6B2338",code:"OP"},
+  {max:300,key:"vunhealthy",color:"#A24CA4",code:"VN"},{max:9999,key:"hazardous",color:"#B83A63",code:"OP"},
 ];
 // Maps TraceTheToxin's real SEPA-style station categories to our own
 // good/moderate/.../hazardous keys (by severity rank) — used only to pick
@@ -575,13 +630,13 @@ async function storageSet(key, value, shared){
 ================================================================= */
 const state = {
   lang:"sr-latn", view:"home", stationId:"ns-liman",
+  theme:(document.documentElement.getAttribute("data-theme")||"light"),
   isAdmin:false, loginError:"", currentUser:null, authStep:"request", pendingEmail:"",
   articles: SEED_ARTICLES.slice(),
   articlesLoadError:null,
   resources:[], resourcesLoadError:null, resourcesLoading:true, resourceSaving:false, resourceError:"", resourceSearch:"", resourceFilter:"all", expandedResource:null, focusResource:null, resourceForm:null, copiedLink:null,
   publishing:false, publishError:"", deleteError:"",
   expandedArticle:null, expandedTerm:null,
-  newsletterDone:false, newsletterBusy:false, newsletterError:"", newsletterEmail:"",
   liveMode:false, loadingLive:true, liveError:null,
   stationManuallySet:false, locatedViaGps:false, locatingGps:false,
 };
@@ -597,6 +652,36 @@ function setLang(l){
   document.documentElement.lang = l==="sr-cyrl" ? "sr-Cyrl" : "sr-Latn";
   render();
 }
+/* =================================================================
+   THEME — light (default) -> dark -> system, then back to light.
+   Saved in localStorage; the head script applies it before first paint.
+================================================================= */
+const THEME_ORDER = ["light","dark","system"];
+const THEME_NAMES = {light:"svetla", dark:"tamna", system:"sistemska"};
+function nextTheme(mode){ return THEME_ORDER[(THEME_ORDER.indexOf(mode)+1) % THEME_ORDER.length]; }
+function themeIconName(mode){ return mode==="dark" ? "moon" : mode==="system" ? "monitor" : "sun"; }
+function themeLabel(mode){ return srDisplay(`Tema: ${THEME_NAMES[mode]}. Sledeća: ${THEME_NAMES[nextTheme(mode)]}.`); }
+function syncThemeColor(){
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() || "#F3F4F0");
+}
+function toggleTheme(){
+  const mode = nextTheme(state.theme);
+  state.theme = mode;
+  document.documentElement.setAttribute("data-theme", mode);
+  try{ localStorage.setItem("theme", mode); }catch(e){}
+  syncThemeColor();
+  // Update only the button (a full render() would drop keyboard focus).
+  const btn = document.getElementById("theme-btn");
+  if (btn){ const lbl = themeLabel(mode); btn.innerHTML = icon(themeIconName(mode),17); btn.setAttribute("aria-label",lbl); btn.title = lbl; }
+  const live = document.getElementById("theme-status");
+  if (live) live.textContent = srDisplay("Tema: " + THEME_NAMES[mode] + ".");
+}
+try{
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (state.theme==="system") syncThemeColor(); });
+}catch(e){}
+syncThemeColor();
+
 /* =================================================================
    ROUTING — hash based (#/vesti, #/dokumentacija/<id> ...), so the back
    button works and individual items/articles have a shareable link,
@@ -972,37 +1057,6 @@ async function deleteArticle(id){
   }
 }
 
-async function subscribeNewsletter(e){
-  e.preventDefault();
-  const input = document.getElementById("newsletter-email");
-  const email = input ? input.value.trim().toLowerCase() : "";
-  if (!email || state.newsletterBusy) return;
-  state.newsletterBusy = true; state.newsletterError = ""; state.newsletterEmail = email; render();
-  try{
-    const { error } = await getTttClient().schema("azv").from("newsletter_subscribers").insert({ email, lang: state.lang });
-    // 23505 = already subscribed; treat as success (and don't reveal who is on the list).
-    if (error && error.code !== "23505") throw error;
-    state.newsletterDone = true;
-  }catch(err){
-    console.error("Newsletter signup failed:", err);
-    state.newsletterError = srDisplay("Prijava nije uspela. Proverite adresu i pokušajte ponovo.");
-  }finally{
-    state.newsletterBusy = false; render();
-  }
-}
-// Admin: download all newsletter signups as CSV (read allowed to admins only by RLS).
-async function exportSubscribers(){
-  if (!state.isAdmin) return;
-  try{
-    const { data, error } = await getTttClient().schema("azv").from("newsletter_subscribers").select("email,lang,created_at").order("created_at",{ascending:true});
-    if (error) throw error;
-    const csv = "email,lang,created_at\n" + (data||[]).map(r=>[r.email,r.lang,r.created_at].map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "newsletter-prijave.csv";
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  }catch(err){ alert(`${srDisplay("Izvoz nije uspeo:")} ${(err&&err.message)||err}`); }
-}
-
 /* =================================================================
    EVENT DELEGATION — every interactive element in the templates below
    carries a data-action (and, where needed, a data-arg) instead of an
@@ -1020,17 +1074,20 @@ async function exportSubscribers(){
    very little benefit over the couple of inline one-liners they are.
 ================================================================= */
 const ACTIONS = {
-  setView, setLang, setStationId, setCityFirstStation, manualLocate,
+  setView, setLang, toggleTheme, setStationId, setCityFirstStation, manualLocate,
   toggleArticle, toggleTerm, resetAuthStep, resendOtp, confirmDeleteArticle,
-  doLogout, subscribeNewsletter, verifyOtp, requestOtp, publishArticle,
+  doLogout, verifyOtp, requestOtp, publishArticle,
   setResourceFilter, searchResources, toggleResource, saveResource, downloadResource, toggleResourceVisibility, deleteResource,
-  startEditResource, cancelEditResource, removeFormAttachment, copyLink, exportSubscribers,
+  startEditResource, cancelEditResource, removeFormAttachment, copyLink,
 };
 function initEventDelegation(){
   const app = document.getElementById("app");
   app.addEventListener("click", e => {
     const el = e.target.closest("[data-action]");
     if (!el) return;
+    // selects/inputs/forms are handled by "change"/"submit"; running them on click re-rendered
+    // the page and instantly closed the open dropdown.
+    if (/^(SELECT|INPUT|TEXTAREA|FORM|OPTION)$/.test(el.tagName)) return;
     const fn = ACTIONS[el.dataset.action];
     if (fn) fn(el.dataset.arg);
   });
@@ -1075,6 +1132,7 @@ function renderHeader(){
       <div class="navgroup">
         <nav class="tabs">${tabs}</nav>
         <div class="langbox"><span aria-hidden="true" class="script-indicator">Aa／Аа</span>${langs}</div>
+        <button id="theme-btn" type="button" class="iconbtn" aria-label="${themeLabel(state.theme)}" title="${themeLabel(state.theme)}" data-action="toggleTheme">${icon(themeIconName(state.theme),17)}</button>
         <button class="adminbtn icon-only" aria-label="${T_.nav_admin}" title="${T_.nav_admin}" data-action="setView" data-arg="${state.isAdmin ? "admin-panel" : "admin-login"}">${icon('shield',17)}</button>
       </div>
     </div>
@@ -1113,8 +1171,10 @@ function renderHome(){
           ${cur.o3!=null?`<div><span class="tabular" style="font-weight:700">${fmtNum(cur.o3)}</span> µg/m³ O₃</div>`:""}` : "";
 
   return `
+  <div class="wrap home-layout">
+  <div class="home-left">
   <div class="dash">
-    <div class="wrap dash-inner">
+    <div class="dash-inner">
       <div>
         <div class="dash-selects">
           <div style="display:flex;align-items:center;gap:6px;">
@@ -1126,6 +1186,7 @@ function renderHome(){
         ${state.liveMode ? `<button type="button" class="locate-btn" data-action="manualLocate" ${state.locatingGps?'disabled':''}>${icon(state.locatingGps?'loader':'pin',12,'var(--dash-muted)')} ${state.locatingGps ? T_.locating : (state.locatedViaGps ? T_.gps_located : T_.use_my_location)}</button>` : ""}
         <div class="tabular aqi-num" style="color:${level.color};font-size:${cur.sepaCategory?'clamp(28px,8vw,40px)':'clamp(44px,12vw,84px)'};">${headline}</div>
         <div class="aqi-cat" style="color:${level.color}">${cur.sepaCategory ? (cur.recordedAt ? `${T_.last_updated} ${formatStationTime(cur.recordedAt)}` : T_.aqi) : `${T_["cat_"+level.key]} · ${T_.aqi}`}</div>
+        <div class="scale" aria-hidden="true">${AQI_LEVELS.map(l=>`<span class="seg${l.key===level.key?" on":""}" style="--c:${l.color}"></span>`).join("")}</div>
         <p class="advisory">${T_["advisory_"+level.key]}</p>
         <div class="pollutant-row">
           <div><span class="tabular" style="font-weight:700">${fmtNum(cur.pm25)}</span> µg/m³ ${T_.pm25}</div>
@@ -1142,21 +1203,22 @@ function renderHome(){
       </div>
     </div>
   </div>
-  <div class="wrap grid2">
-    <div>
+  </div>
+  <div class="home-right">
+    <section>
       <button class="sectionhead" data-action="setView" data-arg="news">${icon('newspaper',16,'var(--accent)')}<span class="txt serif">${T_.news_title}</span></button>
       ${newsPreview || `<p style="color:var(--muted);font-size:14px;">${T_.no_news}</p>`}
-    </div>
-    <div>
+    </section>
+    <section>
       <button class="sectionhead" data-action="setView" data-arg="education">${icon('book',16,'var(--accent)')}<span class="txt serif">${T_.edu_title}</span></button>
       ${eduPreview}
-      ${newsletterBox()}
-    </div>
-  </div>
-  <div class="wrap home-resource-links">
+    </section>
+  <div class="home-resource-links">
     <button class="home-resource-link" data-action="setView" data-arg="resources"><strong>${srDisplay("Dokumentacija i izveštaji")}</strong><span>${srDisplay("Dokumenti, dokazi, nalazi, analize i javno dostupni izveštaji.")}</span></button>
     <button class="home-resource-link" data-action="setView" data-arg="faq"><strong>FAQ</strong><span>${srDisplay("Odgovori na česta pitanja o kvalitetu vazduha i radu inicijative.")}</span></button>
     <a class="home-resource-link viber" href="${escapeHtml(VIBER_URL)}" target="_blank" rel="noopener noreferrer"><strong>${srDisplay("Viber grupa — Alarm za vazduh")}</strong><span>${srDisplay("Glavna zajednica inicijative: razmena informacija, upozorenja i dogovor o akcijama. Pridružite se.")}</span></a>
+  </div>
+  </div>
   </div>`;
 }
 
@@ -1166,12 +1228,12 @@ function articleRow(a, compact){
   const coverUrl = articleCoverUrl(a);
   const photoHtml = coverUrl ? `
     <div style="margin-bottom:8px;">
-      <img src="${coverUrl}" alt="" style="width:100%;max-height:${compact?160:280}px;object-fit:cover;border-radius:3px;display:block;" onerror="this.style.display='none';">
+      <img src="${coverUrl}" alt="" style="width:100%;max-height:${compact?160:280}px;object-fit:cover;border-radius:10px;display:block;" onerror="this.style.display='none';">
     </div>` : "";
   const extraImages = (a.images||[]).slice(1);
   const galleryHtml = (expanded && extraImages.length) ? `
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
-      ${extraImages.map(img=>`<img src="${img.url}" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:3px;" onerror="this.style.display='none';">`).join("")}
+      ${extraImages.map(img=>`<img src="${img.url}" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none';">`).join("")}
     </div>` : "";
   return `
   <div class="article-row">
@@ -1184,23 +1246,6 @@ function articleRow(a, compact){
       <button class="readmore" data-action="copyLink" data-arg="vesti/${encodeURIComponent(a.id)}" style="margin-left:14px;">${state.copiedLink==="vesti/"+encodeURIComponent(a.id)?srDisplay("Link kopiran"):srDisplay("Kopiraj link")}</button>
       ${expanded ? `<p class="article-body">${srSafe(a.body_sr)}</p>${galleryHtml}` : ""}
     `}
-  </div>`;
-}
-
-function newsletterBox(){
-  const T_=t();
-  if (state.newsletterDone){
-    return `<div class="newsletter-box"><div class="t">${T_.newsletter_title}</div><div style="font-size:13px;color:var(--accent)">${T_.newsletter_ok}</div></div>`;
-  }
-  return `
-  <div class="newsletter-box">
-    <div class="t">${T_.newsletter_title}</div>
-    <form data-action="subscribeNewsletter" style="display:flex;gap:8px;flex-wrap:wrap;">
-      <input id="newsletter-email" class="field" type="email" autocomplete="email" maxlength="254" placeholder="${T_.newsletter_ph}" value="${escapeHtml(state.newsletterEmail||"")}" required style="flex:1;min-width:160px;" ${state.newsletterBusy?"disabled":""}>
-      <button type="submit" class="btn btn-accent" ${state.newsletterBusy?"disabled":""}>${T_.newsletter_btn}</button>
-    </form>
-    ${state.newsletterError?`<div class="error-text" role="alert" style="margin-top:8px;">${escapeHtml(state.newsletterError)}</div>`:""}
-    <div style="font-size:11.5px;color:var(--muted2);margin-top:8px;line-height:1.45;">${srDisplay("Prijavom pristajete da koristimo vašu adresu isključivo za obaveštenja inicijative. Odjava je moguća u bilo kom trenutku.")} <a href="#/privatnost" data-action="setView" data-arg="privacy" style="color:var(--accent);">${srDisplay("Politika privatnosti")}</a></div>
   </div>`;
 }
 
@@ -1340,12 +1385,13 @@ function renderAbout(){
     ${legalP("Alarm za vazduh je javna inicijativa za praćenje kvaliteta vazduha u Srbiji. Na jednom mestu prikazujemo merenja sa automatskih mernih stanica, objavljujemo vesti i dokumentaciju o zagađenju i pomažemo građanima da prepoznaju izvore zagađenja i da ih prijave.")}
     <h2 class="serif">${srDisplay("Odakle dolaze podaci")}</h2>
     ${legalP("Merenja sa stanica prikazujemo preko mreže TraceTheToxin. Kategorije kvaliteta vazduha (od „Dobar” do „Izuzetno zagađen”) prate SEPA skalu. Ako podaci uživo privremeno nisu dostupni, sajt prikazuje demo podatke i to jasno označava.")}
+    ${legalP("TraceTheToxin pored merenja prati i prijave građana (dim, sumpor, hemikalije, otpad i drugo) i uz njih analizira istoriju vetra, pa može da prikaže odakle je zagađen vazduh stigao i gde se nalaze mogući izvori. Više o tome na strani Prijava.")}
     <h2 class="serif">${srDisplay("Šta možete da uradite")}</h2>
     <ul>
       <li>${srDisplay("Proverite kvalitet vazduha u svom gradu na početnoj strani.")}</li>
       <li>${srDisplay("Prijavite dim, neprijatan miris ili sumnjivo zagađenje.")}</li>
       <li>${srDisplay("Pročitajte dokumentaciju, izveštaje i odgovore na česta pitanja.")}</li>
-      <li>${srDisplay("Pridružite se zajednici na Viberu i prijavite se na obaveštenja.")}</li>
+      <li>${srDisplay("Pridružite se zajednici na Viberu.")}</li>
     </ul>
     <p style="display:flex;gap:10px;flex-wrap:wrap;">${viberButton("Pridruži se na Viberu")}<button class="btn btn-outline" data-action="setView" data-arg="report">${srDisplay("Prijavi zagađenje")}</button></p>
     ${legalP("Podaci o kvalitetu vazduha na ovom sajtu služe isključivo u informativne svrhe i ne zamenjuju zvanična saopštenja nadležnih institucija.")}
@@ -1362,7 +1408,7 @@ function renderContact(){
       <li><strong>${srDisplay("Prijava zagađenja")}:</strong> <a href="https://toxin.tracethestuff.com/" target="_blank" rel="noopener noreferrer" style="color:var(--accent);">TraceTheToxin</a></li>
     </ul>
     <p style="display:flex;gap:10px;flex-wrap:wrap;">${viberButton("Pridruži se na Viberu")}</p>
-    ${legalP("Zahteve u vezi sa ličnim podacima (pristup, brisanje, odjava sa obaveštenja) možete poslati istim putem.")}
+    ${legalP("Zahteve u vezi sa ličnim podacima (pristup, ispravka, brisanje) možete poslati istim putem.")}
   </div>`;
 }
 function renderPrivacy(){
@@ -1372,12 +1418,12 @@ function renderPrivacy(){
     ${legalP("Ovaj sajt prikuplja što je moguće manje ličnih podataka. Ispod je pregled šta se prikuplja, zašto i koja su vaša prava, u skladu sa Zakonom o zaštiti podataka o ličnosti Republike Srbije.")}
     <h2 class="serif">${srDisplay("Šta prikupljamo")}</h2>
     <ul>
-      <li><strong>${srDisplay("E-adresa za obaveštenja")}</strong> — ${srDisplay("samo ako se sami prijavite na obaveštenja. Čuvamo adresu, izabrano pismo sajta i datum prijave. Svrha je slanje obaveštenja inicijative, a osnov je vaš pristanak. Pristanak možete povući u svakom trenutku, a adresu ćemo obrisati na zahtev.")}</li>
       <li><strong>${srDisplay("Lokacija")}</strong> — ${srDisplay("ako dozvolite pregledaču da je podeli, koristi se isključivo u vašem pregledaču da bi se izabrala najbliža merna stanica. Lokacija se ne šalje na naše servere i ne čuva se.")}</li>
       <li><strong>${srDisplay("Administratori")}</strong> — ${srDisplay("nalozi ovlašćenih saradnika koriste prijavu jednokratnim kodom poslatim e-poštom.")}</li>
     </ul>
     <h2 class="serif">${srDisplay("Kolačići i spoljni servisi")}</h2>
     ${legalP("Sajt ne koristi kolačiće za praćenje, analitiku ni oglašavanje. Radi prikaza, učitavaju se fontovi sa servisa Google Fonts i biblioteka sa servisa unpkg, pa ti servisi mogu videti vašu IP adresu. Podaci se čuvaju u bazi kompanije Supabase (region Zapadna Evropa).")}
+    ${legalP("Prijave zagađenja podnose se na servisu TraceTheToxin, koji nije deo ovog sajta; na njih se primenjuju pravila tog servisa.")}
     <h2 class="serif">${srDisplay("Vaša prava")}</h2>
     ${legalP("Imate pravo da zatražite pristup, ispravku, brisanje ili ograničenje obrade svojih podataka, kao i da povučete pristanak. Ako smatrate da su vaša prava povređena, možete se obratiti Povereniku za informacije od javnog značaja i zaštitu podataka o ličnosti.")}
     <h2 class="serif">${srDisplay("Kontakt")}</h2>
@@ -1395,6 +1441,19 @@ function renderReport(){
       <div class="t">${T_.report_external_title}</div>
       <div class="d">${T_.report_external_desc}</div>
       <a href="https://toxin.tracethestuff.com/" target="_blank" rel="noopener noreferrer" class="btn btn-accent" style="text-decoration:none;">${icon('external',14)} ${T_.report_external_btn}</a>
+    </div>
+    <div class="legal" style="margin-top:30px;">
+      <h2 class="serif" style="margin-top:0;">${srDisplay("Šta nudi TraceTheToxin")}</h2>
+      <ul>
+        <li><strong>${srDisplay("Prijava lošeg vazduha")}</strong> — ${srDisplay("na svojoj GPS lokaciji ili postavljanjem pina na mapi.")}</li>
+        <li><strong>${srDisplay("Kategorije")}</strong> — ${srDisplay("dim, kanalizacija, sumpor, spaljena plastika, hemikalije, otpad, čist vazduh, nepoznato i ostalo, uz filtere po kategoriji i po vremenu (od manje od sat vremena do preko 48 sati).")}</li>
+        <li><strong>${srDisplay("Tragovi vetra")}</strong> — ${srDisplay("za svaku prijavu mapa prikazuje odakle je vazduh došao, uz opcionu istorijsku putanju vetra (3, 6 ili 12 sati). Pri povezivanju prijava sa najbližom stanicom koristi se istorija vetra do 12 sati.")}</li>
+        <li><strong>${srDisplay("Traženje mogućeg izvora")}</strong> — ${srDisplay("uključite alatku „Trace”, dodirnite tačku na mapi i vidite koje prijave tragovi vetra vode do te tačke.")}</li>
+        <li><strong>${srDisplay("Toplotna mapa izvora")}</strong> — ${srDisplay("gušće, jače i novije prijave su svetlije i crvenije, pa se vidi gde se zagađenje najčešće javlja.")}</li>
+        <li><strong>${srDisplay("Dodatni slojevi")}</strong> — ${srDisplay("aktivni požari (satelitski podaci NASA FIRMS) i fabrike, elektrane i deponije (OpenStreetMap i ručno proverena lista).")}</li>
+        <li><strong>${srDisplay("Upozorenja")}</strong> — ${srDisplay("obaveštenje kada se u vašoj blizini prijavi loš vazduh, a vetar ga nosi ka vama; udaljenost možete podesiti na 10, 25 ili 50 km.")}</li>
+        <li><strong>${srDisplay("Aplikacija")}</strong> — ${srDisplay("može se dodati na početni ekran telefona; dostupna je na srpskom i engleskom.")}</li>
+      </ul>
     </div>
     <div class="report-card" style="margin-top:20px;margin-bottom:0;">
       <div class="t">${srDisplay("Pridružite se Viber grupi")}</div>
@@ -1425,8 +1484,8 @@ function renderAdminLogin(){
     <h1 class="serif" style="font-size:26px;margin-bottom:20px;">${T_.admin_login_title}</h1>
     <form data-action="requestOtp" class="form-col">
       <label class="label">${T_.email}
-        <div style="display:flex;align-items:center;border:1px solid var(--line);border-radius:3px;padding:0 10px;">
-          <input id="login-user" type="text" autocomplete="username" style="border:none;padding:9px 0;flex:1;font-size:14px;">
+        <div class="field-wrap">
+          <input id="login-user" type="text" autocomplete="username" style="border:none;background:transparent;padding:10px 0;flex:1;min-width:0;font-size:14px;">
           <span style="font-size:13px;color:var(--muted2);">${ADMIN_EMAIL_DOMAIN}</span>
         </div>
       </label>
@@ -1497,11 +1556,6 @@ function renderAdminPanel(){
         </div>
         <div><h3 style="font-size:15px;margin:0 0 12px;">${srDisplay("Sačuvan sadržaj")}</h3>${state.resourcesLoading?`<p style="font-size:13px;color:var(--muted);">${srDisplay("Učitavanje…")}</p>`:resourceRows}${state.resourcesLoadError?`<p class="error-text" style="margin-top:12px;">${srDisplay("Baza sadržaja nije dostupna:")} ${escapeHtml(state.resourcesLoadError)}</p>`:""}</div>
       </div>
-    </section>
-    <section style="margin-top:48px;border-top:1px solid var(--line);padding-top:28px;">
-      <h2 class="serif" style="font-size:25px;margin:0 0 8px;">${srDisplay("Prijave za obaveštenja")}</h2>
-      <p class="resource-intro">${srDisplay("Adrese sa newsletter forme. Preuzmite listu kao CSV i koristite je u servisu za slanje.")}</p>
-      <button class="btn btn-outline" data-action="exportSubscribers">${icon('external',14)} ${srDisplay("Preuzmi CSV prijava")}</button>
     </section>
   </div>`;
 }
@@ -1693,6 +1747,9 @@ function render(){
   const titles = {news:T_.nav_news, education:T_.nav_edu, resources:T_.nav_docs, faq:T_.nav_faq, report:T_.nav_report,
     about:srDisplay("O nama"), contact:srDisplay("Kontakt"), privacy:srDisplay("Privatnost"),
     "admin-login":T_.nav_admin, "admin-panel":T_.nav_admin};
+  // keep the active tab visible in the horizontally scrolling mobile nav
+  const nav = document.querySelector("nav.tabs"), act = nav && nav.querySelector("button.active");
+  if (nav && act) nav.scrollLeft = act.offsetLeft - (nav.clientWidth - act.offsetWidth) / 2;
   document.title = titles[state.view] ? `${titles[state.view]} — ${T_.title}` : T_.title;
 }
 
