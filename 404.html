@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Alarm za vazduh</title>
+<script>
+/* A just-published news link may be opened before its static page exists (pages are
+   generated every 30 minutes). Send the visitor to the app, which shows the article. */
+(function(){
+  var p = location.pathname;
+  var m = p.match(/^(.*\/)vesti\/([^\/]+)\/?$/);
+  var base = m ? m[1] : (/\.github\.io$/.test(location.hostname) && p.split("/")[1] ? "/" + p.split("/")[1] + "/" : "/");
+  location.replace(base + (m ? "#/vesti/" + m[2] : ""));
+})();
+</script>
+<style>body{font:17px/1.6 Georgia,serif;background:#F3F4F0;color:#132029;margin:0;padding:40px 20px;text-align:center}a{color:#0060B0;font-weight:700}</style>
+</head>
+<body>
+<p>Stranica nije pronađena. <a href="./">Idite na početnu</a>.</p>
+</body>
+</html>
