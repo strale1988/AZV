@@ -386,23 +386,33 @@ if(m!=="dark"&&m!=="system")m="light";document.documentElement.setAttribute("dat
   @media(max-width:600px){.advice-grid{grid-template-columns:1fr;}}
 
   /* ---- Compact phone header: brand + controls on one row, tabs in a 3x2 grid ---- */
+  .menubtn{display:none;}
   @media(max-width:600px){
-    .topbar-inner{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;grid-template-areas:"brand lang theme admin" "tabs tabs tabs tabs";align-items:center;gap:10px 8px;padding:12px 16px 12px;padding-top:calc(12px + env(safe-area-inset-top));}
-    .navgroup{display:contents;}
-    .brand{grid-area:brand;min-width:0;gap:9px;}
+    .topbar-inner{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 12px;padding-top:calc(12px + env(safe-area-inset-top));}
+    .brand{flex:1 1 auto;min-width:0;gap:9px;}
     .brand-logo{width:32px;height:32px;flex-shrink:0;}
-    .brand-name{font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
-    .langbox{grid-area:lang;}
+    .brand-name{font-size:21px;white-space:nowrap;min-width:0;}
+    .menubtn{display:inline-flex;width:42px;height:42px;flex-shrink:0;}
+    .navgroup{display:none;flex:1 1 100%;width:100%;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:10px 8px;padding-top:4px;}
+    .topbar.menu-open .navgroup{display:flex;}
+    .langbox{margin-right:auto;}
     .langbox .script-indicator{display:none;}
     .langbox button{padding:7px 9px;min-height:30px;}
-    #theme-btn{grid-area:theme;}
-    .adminbtn.icon-only{grid-area:admin;}
-    .iconbtn,.adminbtn.icon-only{width:38px;height:38px;}
-    nav.tabs{grid-area:tabs;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;flex:none;}
-    nav.tabs button{padding:0 6px;min-height:40px;font-size:13.5px;text-align:center;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--line);background:var(--surface);color:var(--text2);}
+    .iconbtn,.adminbtn.icon-only{width:42px;height:42px;}
+    nav.tabs{flex:1 1 100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+    nav.tabs button{padding:0 6px;min-height:42px;font-size:13.5px;text-align:center;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--line);background:var(--surface);color:var(--text2);}
     nav.tabs button.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
   }
-  @media(max-width:350px){ .brand-name{font-size:18px;} .langbox button{padding:7px 7px;} }
+  @media(max-width:360px){ .brand-name{font-size:18px;} .brand-logo{width:28px;height:28px;} .brand{gap:7px;} }
+
+  /* ---- News/FAQ/doc rich text: line breaks and clickable links ---- */
+  .rich{white-space:pre-wrap;overflow-wrap:anywhere;}
+  .rich a,.faq-a a,.resource-card .body a{color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:3px;}
+  .field-hint{font-size:12px;color:var(--muted2);line-height:1.45;}
+  .edit-images{display:flex;flex-wrap:wrap;gap:8px;}
+  .edit-images .thumb{position:relative;}
+  .edit-images img{width:64px;height:64px;object-fit:cover;border-radius:8px;display:block;}
+  .edit-images .thumb button{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line-strong);background:var(--surface);color:var(--danger);cursor:pointer;font-size:15px;line-height:1;padding:0;}
 
   /* ---- Gallery + lightbox ---- */
   .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:12px;}
@@ -481,6 +491,9 @@ function icon(name, size, color){
     monitor: `<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>`,
     send: `<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>`,
     loader: `<circle cx="12" cy="12" r="9" stroke-dasharray="42" stroke-dashoffset="15"/>`,
+    menu: `<path d="M4 6h16M4 12h16M4 18h16"/>`,
+    close: `<path d="M6 6l12 12M18 6L6 18"/>`,
+    edit: `<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>`,
   };
   const spinClass = name === 'loader' ? ' class="icon spin"' : ' class="icon"';
   return `<svg ${base}${spinClass}>${paths[name] || ''}</svg>`;
@@ -617,6 +630,28 @@ function escapeHtml(str){
 }
 // Combines both: transliterate for the current script, then escape for HTML.
 function srSafe(str){ return escapeHtml(srDisplay(str)); }
+// Long-form text (news body, FAQ answers, documentation): keeps line breaks (the
+// container needs the .rich / pre-wrap style), turns http(s) links into clickable
+// links, and **text** into bold. URLs are cut out BEFORE transliteration so they
+// never get converted to Cyrillic. Everything is HTML-escaped, so no raw HTML gets in.
+function richText(str){
+  if (str == null) return "";
+  str = String(str);
+  const fmt = s => escapeHtml(srDisplay(s)).replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>");
+  const re = /https?:\/\/[^\s<>"]+/g;
+  let out = "", last = 0, m;
+  while ((m = re.exec(str))){
+    let url = m[0], trail = "";
+    const tm = url.match(/[.,;:!?)\]'”»]+$/);
+    if (tm){ trail = tm[0]; url = url.slice(0, url.length - trail.length); }
+    out += fmt(str.slice(last, m.index));
+    const safe = safeExternalUrl(url);
+    out += safe ? `<a href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>` : escapeHtml(url);
+    out += fmt(trail);
+    last = m.index + m[0].length;
+  }
+  return out + fmt(str.slice(last));
+}
 
 /* =================================================================
    DATA
@@ -882,6 +917,7 @@ const state = {
   expandedArticle:null, expandedTerm:null,
   liveMode:false, loadingLive:true, liveError:null,
   stationManuallySet:false, locatedViaGps:false, locatingGps:false,
+  menuOpen:false, newsForm:null,
 };
 
 function t(){ return T[state.lang]; }
@@ -952,7 +988,7 @@ function showView(v, id){
     else if (v==="faq") state.expandedResource=id;
     else if (v==="resources") state.focusResource=id;
   }
-  state.view=v; state.loginError="";
+  state.view=v; state.loginError=""; state.menuOpen=false;
   if (v==="admin-login"){ state.authStep="request"; state.pendingEmail=""; }
   render();
   window.scrollTo(0,0);
@@ -1006,6 +1042,10 @@ function setCityFirstStation(city){
   if (first){ state.stationId = first.id; rememberStation(first.id); }
   state.stationManuallySet=true; state.locatedViaGps=false;
   render();
+}
+function toggleMenu(){
+  state.menuOpen = !state.menuOpen; render();
+  const b = document.getElementById("menu-btn"); if (b) b.focus({preventScroll:true});
 }
 function toggleArticle(id){ state.expandedArticle = state.expandedArticle===id ? null : id; render(); }
 function toggleTerm(key){ state.expandedTerm = state.expandedTerm===key ? null : key; render(); }
@@ -1236,7 +1276,15 @@ async function toggleResourceVisibility(id){
 }
 function adminHasUnsaved(){
   const g=id=>document.getElementById(id);
-  if(state.adminTab==="news") return ["new-title","new-excerpt","new-body"].some(id=>g(id)&&g(id).value.trim());
+  if(state.adminTab==="news"){
+    if(!g("new-title")) return false;
+    const f=readNewsForm();
+    const same=(a,b)=>String(a||"").trim()===String(b||"").trim();
+    const orig=f.id?state.articles.find(a=>a.id===f.id):null;
+    if(orig) return !(same(f.title,orig.title_sr)&&same(f.excerpt,orig.excerpt_sr)&&same(f.body,orig.body_sr)) || f.removed.length>0;
+    const photo=g("new-photo");
+    return !!(f.title.trim()||f.excerpt.trim()||f.body.trim()||(photo&&photo.files&&photo.files.length));
+  }
   if(!g("resource-title")) return false;
   const f=readResourceForm();
   const same=(a,b)=>String(a||"").trim()===String(b||"").trim();
@@ -1253,7 +1301,7 @@ function closeImage(){ state.lightbox=null; render(); }
 document.addEventListener("keydown", e=>{ if (e.key==="Escape" && state.lightbox) closeImage(); });
 function setAdminTab(tab){
   if(tab!==state.adminTab && adminHasUnsaved() && !window.confirm(srDisplay("Imate nesačuvan unos. Odbaciti ga i preći na drugi tab?"))) return;
-  state.adminTab=tab; state.resourceForm=null; state.resourceError=""; state.publishError=""; state.deleteError="";
+  state.adminTab=tab; state.resourceForm=null; state.newsForm=null; state.resourceError=""; state.publishError=""; state.deleteError="";
   render();
 }
 // arg is "<item id>|up" or "<item id>|down". Positions of the whole FAQ list are renumbered 0..n-1.
@@ -1297,7 +1345,7 @@ async function doLogout(){
   state.isAdmin = false; state.currentUser = null;
   state.resourceError = ""; state.publishError = ""; state.deleteError = "";
   // Drop any private items the admin had loaded, then reload what the public may see.
-  state.resources = []; state.resourceForm = null;
+  state.resources = []; state.resourceForm = null; state.newsForm = null;
   setView("home");
   refreshResources();
 }
@@ -1324,37 +1372,86 @@ async function loadArticlesFromSupabase(){
   }));
 }
 
+/* ---- News admin form (create + edit). The form lives in state so a re-render never wipes what was typed. ---- */
+function emptyNewsForm(){ return {id:null, title:"", excerpt:"", body:"", images:[], removed:[]}; }
+function getNewsForm(){ if (!state.newsForm) state.newsForm = emptyNewsForm(); return state.newsForm; }
+function readNewsForm(){
+  const f = getNewsForm(); const g = id => document.getElementById(id);
+  if (g("new-title")){
+    f.title = g("new-title").value;
+    if (g("new-excerpt")) f.excerpt = g("new-excerpt").value;
+    if (g("new-body")) f.body = g("new-body").value;
+  }
+  return f;
+}
+function startEditArticle(id){
+  if (!state.isAdmin) return;
+  const a = state.articles.find(x=>String(x.id)===String(id)); if (!a) return;
+  if (adminHasUnsaved() && !window.confirm(srDisplay("Imate nesačuvan unos. Odbaciti ga i urediti ovu vest?"))) return;
+  state.adminTab = "news";
+  state.newsForm = {id:a.id, title:a.title_sr||"", excerpt:a.excerpt_sr||"", body:a.body_sr||"", images:(a.images||[]).slice(), removed:[]};
+  state.publishError = ""; state.deleteError = ""; render();
+  const form = document.getElementById("news-form"); if (form) form.scrollIntoView({behavior:"smooth", block:"start"});
+}
+function cancelEditArticle(){ state.newsForm = emptyNewsForm(); state.publishError = ""; render(); }
+function removeNewsImage(idx){
+  const f = readNewsForm(); const img = f.images[Number(idx)]; if (!img) return;
+  f.images.splice(Number(idx), 1); f.removed.push(img); render();
+}
+
+// Creates a new article, or saves changes when the form is editing an existing one.
 async function publishArticle(e){
   e.preventDefault();
-  const title = document.getElementById("new-title").value.trim();
-  const excerpt = document.getElementById("new-excerpt").value.trim();
-  const body = document.getElementById("new-body").value.trim();
+  const f = readNewsForm();
+  const title = f.title.trim(), excerpt = f.excerpt.trim(), body = f.body.trim();
   const photoInput = document.getElementById("new-photo");
   const files = photoInput && photoInput.files ? [...photoInput.files] : [];
   if (!title) return;
 
   state.publishing = true; state.publishError = ""; render();
+  let uploaded = [];
   try{
-    const { data, error } = await azvNews()
-      .insert({ title_sr:title, excerpt_sr:excerpt, body_sr:body, created_by: state.currentUser ? state.currentUser.id : null })
-      .select()
-      .single();
-    if (error) throw error;
+    if (f.id){
+      // EDIT: upload any newly added photos, then save text + the final photo list.
+      if (files.length) uploaded = await uploadArticlePhotos(f.id, files);
+      const images = [...f.images, ...uploaded];
+      const { data, error } = await azvNews()
+        .update({ title_sr:title, excerpt_sr:excerpt, body_sr:body, images })
+        .eq("id", f.id).select().single();
+      if (error) throw error;
+      // Only after the database accepted the change, delete photos the admin removed.
+      const gone = f.removed.map(img=>img.path).filter(Boolean);
+      if (gone.length){ try{ await getTttClient().storage.from('azv-news').remove(gone); }catch(_){ console.warn("Photo cleanup failed"); } }
+      const updated = {
+        id: data.id, date:(data.created_at||"").slice(0,10),
+        title_sr:data.title_sr, excerpt_sr:data.excerpt_sr, body_sr:data.body_sr,
+        images: data.images || images,
+      };
+      state.articles = state.articles.map(a=>a.id===updated.id ? updated : a);
+    } else {
+      const { data, error } = await azvNews()
+        .insert({ title_sr:title, excerpt_sr:excerpt, body_sr:body, created_by: state.currentUser ? state.currentUser.id : null })
+        .select()
+        .single();
+      if (error) throw error;
 
-    let images = [];
-    if (files.length){
-      images = await uploadArticlePhotos(data.id, files);
-      const { error: updErr } = await azvNews().update({ images }).eq("id", data.id);
-      if (updErr) throw updErr;
+      let images = [];
+      if (files.length){
+        images = await uploadArticlePhotos(data.id, files);
+        const { error: updErr } = await azvNews().update({ images }).eq("id", data.id);
+        if (updErr) throw updErr;
+      }
+
+      const article = {
+        id: data.id, date:(data.created_at||"").slice(0,10),
+        title_sr:data.title_sr, excerpt_sr:data.excerpt_sr, body_sr:data.body_sr,
+        images,
+      };
+      state.articles = [article, ...state.articles];
     }
-
-    const article = {
-      id: data.id, date:(data.created_at||"").slice(0,10),
-      title_sr:data.title_sr, excerpt_sr:data.excerpt_sr, body_sr:data.body_sr,
-      images,
-    };
-    state.articles = [article, ...state.articles];
+    state.newsForm = emptyNewsForm();
   }catch(err){
+    if (f.id && uploaded.length){ try{ await getTttClient().storage.from('azv-news').remove(uploaded.map(i=>i.path)); }catch(_){} }
     state.publishError = (err && err.message) || String(err);
   }finally{
     state.publishing = false; render();
@@ -1369,6 +1466,7 @@ async function deleteArticle(id){
   const prev = state.articles;
   const article = state.articles.find(a=>a.id===id);
   state.articles = state.articles.filter(a=>a.id!==id);
+  if (state.newsForm && state.newsForm.id===id) state.newsForm = emptyNewsForm();
   render();
   try{
     const client = getTttClient();
@@ -1408,6 +1506,7 @@ const ACTIONS = {
   setResourceFilter, searchResources, toggleResource, saveResource, downloadResource, toggleResourceVisibility, deleteResource,
   startEditResource, cancelEditResource, removeFormAttachment, copyLink,
   setAdminTab, moveFaq, setAdviceLevel, openImage, closeImage, retryLive, retryResources, copyEmbed,
+  toggleMenu, startEditArticle, cancelEditArticle, removeNewsImage,
 };
 function initEventDelegation(){
   const app = document.getElementById("app");
@@ -1461,13 +1560,14 @@ function renderHeader(){
     return `<button class="${state.lang===l?'active':''}" data-action="setLang" data-arg="${l}">${label}</button>`;
   }).join("");
   return `
-  <header class="topbar">
+  <header class="topbar${state.menuOpen?' menu-open':''}">
     <div class="wrap topbar-inner">
       <button class="brand" data-action="setView" data-arg="home">
         <img src="${BRAND_LOGO==='bw' ? 'icons/AZV_Logo_BW_256.png' : 'icons/favicon.png'}" alt="" class="brand-logo${BRAND_LOGO==='bw' ? ' bw' : ''}">
         <span class="serif brand-name">${T_.title}</span>
       </button>
-      <div class="navgroup">
+      <button id="menu-btn" type="button" class="iconbtn menubtn" aria-label="${srDisplay(state.menuOpen?"Zatvori meni":"Otvori meni")}" aria-expanded="${state.menuOpen?"true":"false"}" aria-controls="site-nav" data-action="toggleMenu">${icon(state.menuOpen?'close':'menu',20)}</button>
+      <div class="navgroup" id="site-nav">
         <nav class="tabs">${tabs}</nav>
         <div class="langbox"><span aria-hidden="true" class="script-indicator">Aa／Аа</span>${langs}</div>
         <button id="theme-btn" type="button" class="iconbtn" aria-label="${themeLabel(state.theme)}" title="${themeLabel(state.theme)}" data-action="toggleTheme">${icon(themeIconName(state.theme),17)}</button>
@@ -1576,7 +1676,7 @@ function articleRow(a, compact){
     ${compact ? "" : `
       <button class="readmore" data-action="toggleArticle" data-arg="${a.id}">${expanded ? T_.collapse : T_.read_more}</button>
       <button class="readmore" data-action="copyLink" data-arg="vesti/${encodeURIComponent(a.id)}" style="margin-left:14px;">${state.copiedLink==="vesti/"+encodeURIComponent(a.id)?srDisplay("Link kopiran"):shareLabel()}</button>
-      ${expanded ? `<p class="article-body">${srSafe(a.body_sr)}</p>${galleryHtml}` : ""}
+      ${expanded ? `<div class="article-body rich">${richText(a.body_sr)}</div>${galleryHtml}` : ""}
     `}
   </div>`;
 }
@@ -1653,7 +1753,7 @@ function fmtBytes(n){ n=Number(n)||0; return n>=1048576 ? (n/1048576).toFixed(1)
 function renderResourceCard(r, compact=false){
   const expanded=state.expandedResource===r.id;
   const summary=r.summary ? `<p class="summary">${srSafe(r.summary)}</p>` : "";
-  const bodyHtml=r.body ? `<div class="body">${srSafe(r.body)}</div>` : "";
+  const bodyHtml=r.body ? `<div class="body">${richText(r.body)}</div>` : "";
   const body=compact ? "" : bodyHtml;
   const url=safeExternalUrl(r.external_url);
   const atts=r.attachments||[];
@@ -1704,7 +1804,7 @@ function renderResources(){
 }
 function renderFaqItem(r){
   const open=state.expandedResource===r.id;
-  const answer=[r.summary,r.body].filter(Boolean).map(srSafe).join("\n\n");
+  const answer=[r.summary,r.body].filter(Boolean).map(richText).join("\n\n");
   const shareArg=`faq/${encodeURIComponent(r.id)}`;
   return `<div class="faq-item">
     <button type="button" class="faq-q" aria-expanded="${open}" data-action="toggleResource" data-arg="${escapeHtml(r.id)}"><span class="q">${srSafe(r.title)}</span><span class="chev${open?" open":""}">${icon('chevron',18,'var(--muted)')}</span></button>
@@ -1854,20 +1954,29 @@ function renderAdminLogin(){
 
 function renderAdminNews(){
   const T_=t();
+  const nf = getNewsForm();
   const newsRows = state.articles.length ? state.articles.map(a=>{
     const thumbUrl = articleCoverUrl(a);
-    return `<div class="manage-row"><div style="display:flex;align-items:center;gap:10px;">${thumbUrl ? `<img src="${thumbUrl}" alt="" loading="lazy" style="width:36px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none';">` : ""}<div><div class="tt">${srSafe(a.title_sr)}</div><div class="dd">${a.date}</div></div></div><button class="del-btn" aria-label="Obriši vest" data-action="confirmDeleteArticle" data-arg="${a.id}">${icon('trash',16)}</button></div>`;
+    const editingThis = !!(nf.id && nf.id===a.id);
+    return `<div class="manage-row"><div style="display:flex;align-items:center;gap:10px;min-width:0;">${thumbUrl ? `<img src="${thumbUrl}" alt="" loading="lazy" style="width:36px;height:36px;object-fit:cover;border-radius:3px;flex-shrink:0;" onerror="this.style.display='none';">` : ""}<div style="min-width:0;"><div class="tt">${srSafe(a.title_sr)}</div><div class="dd">${a.date}${editingThis?` · ${srDisplay("u izmeni")}`:""}</div></div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><button class="btn btn-outline" style="padding:7px 10px;" aria-label="${srDisplay("Izmeni vest")}" data-action="startEditArticle" data-arg="${a.id}">${icon('edit',14)} ${srDisplay("Izmeni")}</button><button class="del-btn" aria-label="${srDisplay("Obriši vest")}" data-action="confirmDeleteArticle" data-arg="${a.id}">${icon('trash',16)}</button></div></div>`;
   }).join("") : `<p style="color:var(--muted);font-size:13px;">${T_.no_articles_yet}</p>`;
+  const editing = !!nf.id;
+  const formImgs = nf.images.map((img,i)=>`<div class="thumb"><img src="${escapeHtml(img.url)}" alt="" loading="lazy"><button type="button" aria-label="${srDisplay("Ukloni fotografiju")}" data-action="removeNewsImage" data-arg="${i}" ${state.publishing?"disabled":""}>×</button></div>`).join("");
   return `<div class="admin-grid">
     <div>
-      <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon('plus',15,'var(--accent)')} ${T_.add_article}</h2>
-      <form data-action="publishArticle" class="form-col">
-        <input id="new-title" class="field" placeholder="${T_.article_title}" ${state.publishing?"disabled":""}>
-        <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}" ${state.publishing?"disabled":""}>
-        <textarea id="new-body" class="field" rows="5" placeholder="${T_.article_body}" ${state.publishing?"disabled":""}></textarea>
-        <label class="label">${T_.article_photo}<input id="new-photo" type="file" accept="image/*" multiple class="field" style="padding:6px 10px;" ${state.publishing?"disabled":""}></label>
-        <button type="submit" class="btn btn-accent" style="align-self:flex-start;" ${state.publishing?"disabled":""}>${state.publishing?T_.publishing:T_.publish}</button>
-        ${state.publishError?`<div class="error-text">${escapeHtml(state.publishError)}</div>`:""}${state.deleteError?`<div class="error-text">${escapeHtml(state.deleteError)}</div>`:""}
+      <h2 style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;">${icon(editing?'edit':'plus',15,'var(--accent)')} ${editing?srDisplay("Izmena vesti"):T_.add_article}</h2>
+      <form id="news-form" data-action="publishArticle" class="form-col">
+        <input id="new-title" class="field" placeholder="${T_.article_title}" value="${escapeHtml(nf.title)}" ${state.publishing?"disabled":""}>
+        <input id="new-excerpt" class="field" placeholder="${T_.article_excerpt}" value="${escapeHtml(nf.excerpt)}" ${state.publishing?"disabled":""}>
+        <textarea id="new-body" class="field" rows="8" placeholder="${T_.article_body}" ${state.publishing?"disabled":""}>${escapeHtml(nf.body)}</textarea>
+        <div class="field-hint">${srDisplay("Enter pravi novi red, a prazan red pravi razmak između pasusa. Linkovi (https://…) postaju klikabilni, a tekst između dve zvezdice, npr. **ovako**, je podebljan.")}</div>
+        ${formImgs?`<div><div class="label" style="margin-bottom:6px;">${srDisplay("Postojeće fotografije")}</div><div class="edit-images">${formImgs}</div></div>`:""}
+        <label class="label">${editing?srDisplay("Dodaj fotografije (opciono, može više odjednom)"):T_.article_photo}<input id="new-photo" type="file" accept="image/*" multiple class="field" style="padding:6px 10px;" ${state.publishing?"disabled":""}></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="submit" class="btn btn-accent" ${state.publishing?"disabled":""}>${state.publishing?T_.publishing:(editing?srDisplay("Sačuvaj izmene"):T_.publish)}</button>
+          ${editing?`<button type="button" class="btn btn-outline" data-action="cancelEditArticle" ${state.publishing?"disabled":""}>${srDisplay("Otkaži izmenu")}</button>`:""}
+        </div>
+        ${state.publishError?`<div class="error-text" role="alert">${escapeHtml(state.publishError)}</div>`:""}${state.deleteError?`<div class="error-text">${escapeHtml(state.deleteError)}</div>`:""}
       </form>
     </div>
     <div><h2 style="font-size:15px;font-weight:700;margin-bottom:12px;">${T_.manage_news}</h2>${newsRows}</div>
@@ -2214,7 +2323,7 @@ document.addEventListener("visibilitychange", ()=>{ if (!document.hidden && Date
   window.addEventListener("scroll", ()=>{
     const h = document.querySelector("header.topbar"); if (!h) return;
     const y = window.scrollY;
-    if (window.innerWidth >= 700 || y <= 80 || y < lastY - 6) h.classList.remove("hide");
+    if (state.menuOpen || window.innerWidth >= 700 || y <= 80 || y < lastY - 6) h.classList.remove("hide");
     else if (y > lastY + 6) h.classList.add("hide");
     lastY = y;
   }, {passive:true});
